@@ -1,0 +1,90 @@
+generator client {
+  provider = "prisma-client-js"
+  moduleFormat = "cjs"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+model Shop {
+  id        String   @id @default(uuid())
+  name      String
+  type      ShopType
+  createdAt DateTime @default(now())
+
+  users     User[]
+  items     Item[]
+  invoices  Invoice[]
+  stockLogs StockLog[]
+}
+
+enum ShopType {
+  DISTRIBUTOR
+  RETAIL
+}
+
+model User {
+  id           String   @id @default(uuid())
+  email        String   @unique
+  passwordHash String
+  role         Role
+  shopId       String
+  shop         Shop     @relation(fields: [shopId], references: [id])
+  refreshToken String?
+  createdAt    DateTime @default(now())
+}
+
+enum Role {
+  SALES
+  STOCK_MANAGER
+  ACCOUNTS
+  ADMIN
+}
+
+model Item {
+  id        String   @id @default(uuid())
+  name      String
+  sku       String
+  price     Decimal
+  shopId    String
+  shop      Shop     @relation(fields: [shopId], references: [id])
+  stockLogs StockLog[]
+
+  @@unique([sku, shopId])
+}
+
+model StockLog {
+  id          String   @id @default(uuid())
+  itemId      String
+  shopId      String
+  change      Int
+  reason      String
+  referenceId String?
+  createdAt   DateTime @default(now())
+
+  item Item @relation(fields: [itemId], references: [id])
+  shop Shop @relation(fields: [shopId], references: [id])
+}
+
+model Invoice {
+  id          String   @id @default(uuid())
+  number      String
+  shopId      String
+  total       Decimal
+  createdById String
+  createdAt   DateTime @default(now())
+
+  shop  Shop @relation(fields: [shopId], references: [id])
+  items InvoiceItem[]
+}
+
+model InvoiceItem {
+  id        String   @id @default(uuid())
+  invoiceId String
+  itemId    String
+  quantity  Int
+  price     Decimal
+
+  invoice Invoice @relation(fields: [invoiceId], references: [id])
+}
