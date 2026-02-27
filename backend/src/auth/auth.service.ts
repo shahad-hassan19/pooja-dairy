@@ -4,7 +4,6 @@ import { UsersService } from '../users/users.service';
 import * as bcrypt from 'bcrypt';
 import { LoginDto } from './dto/login.dto';
 import { randomUUID } from 'crypto';
-import { CreateUserDto } from './dto/create-user.dto';
 
 @Injectable()
 export class AuthService {
@@ -70,23 +69,5 @@ export class AuthService {
     });
 
     return { accessToken: newAccessToken };
-  }
-
-  async register(dto: CreateUserDto) {
-    const existing = await this.usersService.findByEmail(dto.email);
-    if (existing) {
-      throw new Error('User already exists');
-    }
-
-    const passwordHash = await bcrypt.hash(dto.password, 12);
-
-    return this.usersService['prisma'].user.create({
-      data: {
-        email: dto.email,
-        passwordHash,
-        role: dto.role,
-        shopId: dto.shopId,
-      },
-    });
   }
 }

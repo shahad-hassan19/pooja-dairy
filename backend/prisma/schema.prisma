@@ -65,6 +65,9 @@ model StockLog {
 
   item Item @relation(fields: [itemId], references: [id])
   shop Shop @relation(fields: [shopId], references: [id])
+
+  @@index([shopId])
+  @@index([itemId])
 }
 
 model Invoice {
@@ -77,6 +80,9 @@ model Invoice {
 
   shop  Shop @relation(fields: [shopId], references: [id])
   items InvoiceItem[]
+
+  @@index([createdAt])
+  @@index([shopId])
 }
 
 model InvoiceItem {
@@ -87,4 +93,38 @@ model InvoiceItem {
   price     Decimal
 
   invoice Invoice @relation(fields: [invoiceId], references: [id])
+}
+
+model AuditLog {
+  id        String   @id @default(uuid())
+  userId    String
+  shopId    String
+  action    String
+  entity    String
+  entityId  String?
+  metadata  Json?
+  createdAt DateTime @default(now())
+
+  @@index([shopId])
+  @@index([userId])
+  @@index([createdAt])
+}
+
+model Transfer {
+  id          String   @id @default(uuid())
+  fromShopId  String
+  toShopId    String
+  createdById String
+  createdAt   DateTime @default(now())
+
+  items TransferItem[]
+}
+
+model TransferItem {
+  id         String   @id @default(uuid())
+  transferId String
+  itemId     String
+  quantity   Int
+
+  transfer Transfer @relation(fields: [transferId], references: [id])
 }
