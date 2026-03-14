@@ -17,7 +17,11 @@ export async function createApp(): Promise<INestApplication> {
     }),
   );
 
-  const allowedOrigins = ['http://localhost:3000', 'http://localhost:5173'];
+  const allowedOrigins = [
+    'https://pooja-dairy-noida.vercel.app',
+    'http://localhost:3000',
+    'http://localhost:5173',
+  ];
   if (process.env.CORS_ORIGIN) {
     allowedOrigins.push(
       ...process.env.CORS_ORIGIN.split(',').map((o) => o.trim()),
