@@ -1,37 +1,8 @@
-import { NestFactory } from '@nestjs/core';
-import { AppModule } from './app.module';
-import helmet from 'helmet';
-import rateLimit from 'express-rate-limit';
-import { ValidationPipe } from '@nestjs/common';
 import 'dotenv/config';
+import { createApp } from './app-bootstrap';
 
 async function bootstrap() {
-  const app = await NestFactory.create(AppModule);
-
-  app.use(helmet());
-
-  app.use(
-    rateLimit({
-      windowMs: 15 * 60 * 1000,
-      max: 200,
-    }),
-  );
-
-  app.enableCors({
-    origin: ['http://localhost:3000', 'http://localhost:5173'],
-    credentials: true,
-  });
-
-  app.useGlobalPipes(
-    new ValidationPipe({
-      whitelist: true,
-      forbidNonWhitelisted: true,
-      transform: true,
-    }),
-  );
-
-  app.setGlobalPrefix('api');
-
+  const app = await createApp();
   await app.listen(process.env.PORT ?? 3000);
 }
 void bootstrap();
