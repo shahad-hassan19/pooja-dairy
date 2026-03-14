@@ -1,0 +1,39 @@
+.billing-header {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 1rem;
+}
+
+.billing-shop-select {
+  margin-bottom: 0;
+  min-width: 200px;
+}
+
+.billing-card {
+  margin-top: 1rem;
+  padding: 1.5rem;
+}
+
+.billing-toolbar {
+  display: flex;
+  justify-content: flex-end;
+  margin-bottom: 1rem;
+}
+
+.billing-qty-input {
+  max-width: 100px;
+}
+
+.billing-price-input {
+  max-width: 140px;
+}
+
+.billing-footer {
+  display: flex;
+  justify-content: flex-end;
+  gap: 1rem;
+  padding-top: 1rem;
+  align-items: center;
+}

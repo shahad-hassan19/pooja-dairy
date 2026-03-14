@@ -1,3 +1,24 @@
+# Pooja Dairy — Frontend
+
+Responsive web app for the Pooja Dairy backend: login, shops, users, inventory, billing, transfers, reports, and audit logs. Role-based navigation (Admin, Sales, Stock Manager, Accounts).
+
+## Run
+
+1. Copy env and set API URL:
+   ```bash
+   cp .env.example .env
+   ```
+2. Start backend (Nest) on port 3000: `cd backend && npm run start:dev`
+3. Start frontend (Vite) on port 5173: `cd frontend && npm run dev`
+
+## Scripts
+
+- `npm run dev` — development server
+- `npm run build` — production build
+- `npm run preview` — preview production build
+
+---
+
 # React + TypeScript + Vite
 
 This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.

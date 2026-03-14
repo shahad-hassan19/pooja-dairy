@@ -3,7 +3,7 @@ import { ConflictException, Injectable } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import { JwtPayload } from 'src/auth/types/jwt-payload.type';
 import { CreateUserDto } from './dto/create-user.dto';
-import { User } from '@prisma/client';
+import { Prisma, User } from '@prisma/client';
 import { AuditService } from 'src/audit/audit.service';
 
 @Injectable()
@@ -43,14 +43,14 @@ export class UsersService {
 
     const hashedPassword: string = await bcrypt.hash(dto.password, 12);
 
-    const user: User = await this.prisma.user.create({
-      data: {
-        email: dto.email,
-        passwordHash: hashedPassword,
-        role: dto.role,
-        shopId: dto.shopId,
-      },
-    });
+    const data: Prisma.UserUncheckedCreateInput = {
+      name: dto.name,
+      email: dto.email,
+      passwordHash: hashedPassword,
+      role: dto.role,
+      shopId: dto.shopId,
+    };
+    const user: User = await this.prisma.user.create({ data });
 
     await this.auditService.logAction(admin, 'USER_CREATED', 'User', user.id, {
       createdUserEmail: user.email,
@@ -66,6 +66,7 @@ export class UsersService {
       where: { shopId },
       select: {
         id: true,
+        name: true,
         email: true,
         role: true,
         createdAt: true,

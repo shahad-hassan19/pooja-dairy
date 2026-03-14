@@ -1,0 +1,27 @@
+.transfers-card {
+  margin-top: 1rem;
+  padding: 1.5rem;
+}
+
+.transfers-shops {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 1rem;
+  margin-bottom: 1rem;
+}
+
+.transfers-toolbar {
+  display: flex;
+  justify-content: flex-end;
+  margin-bottom: 1rem;
+}
+
+.transfers-qty-input {
+  max-width: 120px;
+}
+
+.transfers-footer {
+  display: flex;
+  justify-content: flex-end;
+  padding-top: 1rem;
+}

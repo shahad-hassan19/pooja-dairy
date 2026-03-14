@@ -1,0 +1,11 @@
+.audit-header {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  gap: 1rem;
+}
+
+.audit-shop-select {
+  margin-bottom: 0;
+  min-width: 180px;
+}

@@ -26,6 +26,7 @@ enum ShopType {
 
 model User {
   id           String   @id @default(uuid())
+  name         String
   email        String   @unique
   passwordHash String
   role         Role
@@ -96,7 +97,7 @@ model InvoiceItem {
 }
 
 model AuditLog {
-  id        String   @id @default(uuid())
+  id        String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
   userId    String
   shopId    String
   action    String

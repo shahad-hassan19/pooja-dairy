@@ -1,0 +1,22 @@
+.users-header {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 1rem;
+}
+
+.users-shop-select {
+  margin-bottom: 0;
+  min-width: 200px;
+}
+
+.users-form-card {
+  padding: 1.5rem;
+  margin-bottom: 1.5rem;
+}
+
+.users-form-card h2 {
+  margin: 0 0 1rem 0;
+  font-size: 1.125rem;
+}

@@ -1,0 +1,31 @@
+.inventory-header {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 1rem;
+}
+
+.inventory-shop-select {
+  margin-bottom: 0;
+  min-width: 200px;
+}
+
+.inventory-form-card {
+  padding: 1.5rem;
+  margin-bottom: 1.5rem;
+}
+
+.inventory-form-card h2 {
+  margin: 0 0 1rem 0;
+  font-size: 1.125rem;
+}
+
+.inventory-current-stock {
+  margin: 0 0 1rem 0;
+  color: var(--color-text-muted);
+}
+
+.inventory-adjust-card {
+  margin-top: 1rem;
+}

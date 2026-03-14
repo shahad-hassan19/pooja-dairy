@@ -4,9 +4,45 @@
     <meta charset="UTF-8" />
     <link rel="icon" type="image/svg+xml" href="/vite.svg" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>frontend</title>
+    <title>Pooja Dairy</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:ital,wght@0,400;0,500;0,600;0,700;1,400&display=swap" rel="stylesheet" />
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+      tailwind.config = {
+        theme: {
+          extend: {
+            colors: {
+              brand: {
+                DEFAULT: '#1a5f4a',
+                dark: '#134a3a',
+                soft: '#d4e9e3',
+              },
+              cream: {
+                DEFAULT: '#f7f4ef',
+                light: '#fcfbf9',
+                dark: '#ebe6de',
+              },
+              ink: '#2d2a26',
+              accent: {
+                DEFAULT: '#c9a227',
+                soft: '#f5e6c8',
+              },
+            },
+            fontFamily: {
+              sans: ['Plus Jakarta Sans', 'system-ui', 'sans-serif'],
+            },
+            boxShadow: {
+              card: '0 1px 3px rgba(45,42,38,0.06), 0 4px 12px rgba(45,42,38,0.04)',
+              elevated: '0 4px 20px rgba(45,42,38,0.08), 0 1px 3px rgba(45,42,38,0.04)',
+            },
+          },
+        },
+      };
+    </script>
   </head>
-  <body>
+  <body class="min-h-screen bg-cream text-ink font-sans antialiased">
     <div id="root"></div>
     <script type="module" src="/src/main.tsx"></script>
   </body>
