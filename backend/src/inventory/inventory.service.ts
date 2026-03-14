@@ -2,9 +2,9 @@ import { Injectable, BadRequestException } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import { CreateItemDto } from './dto/create-item.dto';
 import { AdjustStockDto } from './dto/adjust-stock.dto';
-import { JwtPayload } from 'src/auth/types/jwt-payload.type';
+import { JwtPayload } from '../auth/types/jwt-payload.type';
 import { Item } from '@prisma/client';
-import { AuditService } from 'src/audit/audit.service';
+import { AuditService } from '../audit/audit.service';
 
 type ItemWithStock = Item & {
   currentStock: number;
