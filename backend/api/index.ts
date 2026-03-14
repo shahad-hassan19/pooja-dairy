@@ -1,3 +1,4 @@
+import 'tsconfig-paths/register';
 import 'dotenv/config';
 import type { Application } from 'express';
 import { createApp } from '../src/app-bootstrap';
