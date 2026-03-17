@@ -2,11 +2,17 @@ import { useCallback, useEffect, useState } from 'react';
 import { apiGet } from '../api/client';
 import { useAuth } from '../auth/useAuth';
 import { useShop } from '../contexts/useShop';
+import type { Item } from '../types';
 import { Button } from '../components/ui/Button';
 import { Card } from '../components/ui/Card';
 import { Field, inputClass } from '../components/ui/Field';
 import { Callout, Page, PageHeader } from '../components/ui/Page';
 import { Table, TableWrap, Td, Th } from '../components/ui/Table';
+
+function shortId(id: string) {
+  if (id.length <= 10) return id;
+  return `${id.slice(0, 6)}…${id.slice(-4)}`;
+}
 
 export function Reports() {
   const { hasRole } = useAuth();
@@ -20,6 +26,7 @@ export function Reports() {
   const [revenueByShop, setRevenueByShop] = useState<{ shopId: string; revenue: number }[] | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
+  const [itemNameById, setItemNameById] = useState<Record<string, string>>({});
 
   const canSales = hasRole('ACCOUNTS', 'ADMIN');
   const canStock = hasRole('STOCK_MANAGER', 'ADMIN');
@@ -69,6 +76,30 @@ export function Reports() {
       }
     });
   }, [loadAdminReports, isAdmin]);
+
+  useEffect(() => {
+    let cancelled = false;
+    if (!shopId) return () => {};
+    if (!stockSummary || stockSummary.length === 0) return () => {};
+
+    const missingIds = stockSummary.map((r) => r.itemId).filter((id) => !itemNameById[id]);
+    if (missingIds.length === 0) return () => {};
+
+    apiGet<Item[]>(`/inventory/${shopId}/items`)
+      .then((items) => {
+        if (cancelled) return;
+        const next: Record<string, string> = {};
+        for (const it of items) next[it.id] = it.name;
+        setItemNameById((prev) => ({ ...prev, ...next }));
+      })
+      .catch(() => {
+        // Best-effort only; fall back to IDs.
+      });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [shopId, stockSummary, itemNameById]);
 
   return (
     <Page className="space-y-6">
@@ -169,7 +200,9 @@ export function Reports() {
                   <tbody>
                     {stockSummary.map((r) => (
                       <tr key={r.itemId} className="border-t border-cream-dark/60 hover:bg-cream-dark/40">
-                        <Td className="font-medium">{r.itemId}</Td>
+                        <Td className="font-medium" title={r.itemId}>
+                          {itemNameById[r.itemId] ?? shortId(r.itemId)}
+                        </Td>
                         <Td className="text-ink/60">{r.currentStock}</Td>
                       </tr>
                     ))}
@@ -222,7 +255,9 @@ export function Reports() {
                   <tbody>
                     {revenueByShop.map((r) => (
                       <tr key={r.shopId} className="border-t border-cream-dark/60 hover:bg-cream-dark/40">
-                        <Td className="font-medium">{r.shopId}</Td>
+                        <Td className="font-medium" title={r.shopId}>
+                          {shops.find((s) => s.id === r.shopId)?.name ?? shortId(r.shopId)}
+                        </Td>
                         <Td className="text-ink/60">₹{Number(r.revenue).toFixed(2)}</Td>
                       </tr>
                     ))}

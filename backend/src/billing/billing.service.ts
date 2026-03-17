@@ -43,11 +43,21 @@ export class BillingService {
       // Calculate total
       const total = dto.items.reduce((sum, i) => sum + i.price * i.quantity, 0);
 
+      const billDate = new Date(dto.billDate);
+      if (Number.isNaN(billDate.getTime())) {
+        throw new BadRequestException('Invalid billDate');
+      }
+
       // Create invoice
       const invoice = await tx.invoice.create({
         data: {
-          number: `INV-${Date.now()}`,
+          number: `${dto.shopId}-${billDate.toISOString().slice(0, 10)}-${dto.billNo}`,
           shopId: dto.shopId,
+          billNo: dto.billNo,
+          billDate,
+          paymentMethod: dto.paymentMethod,
+          partyName: dto.partyName,
+          phoneNo: dto.phoneNo,
           total,
           createdById: user.sub,
         },

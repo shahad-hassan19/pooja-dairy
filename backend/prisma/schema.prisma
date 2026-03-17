@@ -75,6 +75,11 @@ model Invoice {
   id          String   @id @default(uuid())
   number      String
   shopId      String
+  billNo           Int      @default(0)
+  billDate         DateTime @default(now())
+  paymentMethod    String   @default("Cash")
+  partyName   String?
+  phoneNo     String?
   total       Decimal
   createdById String
   createdAt   DateTime @default(now())
