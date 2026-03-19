@@ -10,14 +10,14 @@ const navByRole: Record<Role, { to: string; label: string }[]> = {
     { to: '/', label: 'Dashboard' },
     { to: '/shops', label: 'Shops' },
     { to: '/users', label: 'Users' },
-    { to: '/inventory', label: 'Inventory' },
     { to: '/billing', label: 'Billing' },
+    { to: '/inventory', label: 'Inventory' },
     { to: '/transfers', label: 'Transfers' },
     { to: '/audit', label: 'Audit' },
   ],
   SALES: [
-    { to: '/inventory', label: 'Inventory' },
     { to: '/billing', label: 'Billing' },
+    { to: '/inventory', label: 'Inventory' },
   ],
   STOCK_MANAGER: [
     { to: '/inventory', label: 'Inventory' },

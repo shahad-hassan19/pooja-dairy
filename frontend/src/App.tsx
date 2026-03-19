@@ -11,6 +11,19 @@ import { Billing } from './pages/Billing';
 import { Transfers } from './pages/Transfers';
 import { Reports } from './pages/Reports';
 import { Audit } from './pages/Audit';
+import { useAuth } from './auth/useAuth.ts';
+
+function IndexRoute() {
+  const { user, isReady } = useAuth();
+
+  if (!isReady) return null;
+  if (!user) return <Navigate to="/login" replace />;
+
+  if (user.role === 'SALES') return <Billing />;
+  
+  return <Reports />;
+}
+
 function App() {
   return (
     <BrowserRouter>
@@ -27,7 +40,7 @@ function App() {
               </ProtectedRoute>
             }
           >
-            <Route index element={<ProtectedRoute roles={['ACCOUNTS', 'STOCK_MANAGER', 'ADMIN']}><Reports /></ProtectedRoute>} />
+            <Route index element={<IndexRoute />} />
             <Route path="shops" element={<ProtectedRoute roles={['ADMIN']}><Shops /></ProtectedRoute>} />
             <Route path="users" element={<ProtectedRoute roles={['ADMIN']}><Users /></ProtectedRoute>} />
             <Route path="inventory" element={<Inventory />} />
