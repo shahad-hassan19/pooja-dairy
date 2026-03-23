@@ -48,8 +48,8 @@ model Item {
   name      String
   sku       String
   price     Decimal
-  shopId    String
-  shop      Shop     @relation(fields: [shopId], references: [id])
+  shopId    String?
+  shop      Shop?     @relation(fields: [shopId], references: [id])
   stockLogs StockLog[]
 
   @@unique([sku, shopId])

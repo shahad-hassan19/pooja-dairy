@@ -20,7 +20,7 @@ function IndexRoute() {
   if (!user) return <Navigate to="/login" replace />;
 
   if (user.role === 'SALES') return <Billing />;
-  
+
   return <Reports />;
 }
 
