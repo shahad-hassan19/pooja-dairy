@@ -4,6 +4,7 @@ import { useShop } from '../contexts/useShop';
 import type { Item } from '../types';
 import type { InvoiceItemInput } from '../types';
 import { cx } from '../lib/cx';
+import { Page } from '../components/ui/Page';
 
 type PaymentMethod = 'Cash' | 'Card' | 'UPI';
 type BillCounterState = { date: string; seq: number };
@@ -186,7 +187,7 @@ export function Billing() {
      RENDER
   ──────────────────────────────────────────────────────────── */
   return (
-    <div className="min-h-screen bg-stone-100 font-sans">
+    <Page className="min-h-screen bg-stone-100 font-sans">
 
       {/* ══════════ TOP BAR ══════════ */}
       <header className="flex items-center justify-between gap-4 border-b border-stone-200 bg-white px-6 py-3">
@@ -263,82 +264,7 @@ export function Billing() {
       {shopId && (
         <div className="flex" style={{ minHeight: 'calc(100vh - 100px)' }}>
 
-          {/* ─── LEFT PANEL — dark, customer details ─── */}
-          <aside className="flex w-72 shrink-0 flex-col gap-0 bg-neutral-900 p-7 xl:w-80">
-
-            {/* Section label */}
-            <div className="mb-6 flex items-center gap-3">
-              <span className="font-mono text-[10px] uppercase tracking-[0.14em] text-neutral-300">
-                Customer
-              </span>
-              <span className="h-px flex-1 bg-neutral-500" />
-            </div>
-
-            {/* Name */}
-            <div className="mb-4">
-              <label className={labelDarkClass}>Name</label>
-              <input
-                value={partyName}
-                onChange={(e) => setPartyName(e.target.value)}
-                placeholder="Party or customer"
-                className={inputDark}
-              />
-            </div>
-
-            {/* Phone */}
-            <div className="mb-4">
-              <label className={labelDarkClass}>Phone</label>
-              <input
-                value={phoneNo}
-                onChange={(e) => setPhoneNo(e.target.value)}
-                placeholder="Optional"
-                inputMode="numeric"
-                className={inputDark}
-              />
-            </div>
-
-            {/* Payment method */}
-            <div className="mb-4">
-              <label className={labelDarkClass} style={{ marginBottom: '0.75rem' }}>
-                Payment
-              </label>
-              <div className="grid grid-cols-3 gap-2">
-                {(['Cash', 'Card', 'UPI'] as PaymentMethod[]).map((m) => (
-                  <button
-                    key={m}
-                    onClick={() => setPaymentMethod(m)}
-                    className={cx(
-                      'flex flex-col items-center gap-1 rounded-lg border py-3 font-mono text-xs transition-all',
-                      paymentMethod === m
-                        ? 'border-orange-600 bg-orange-600/10 text-orange-500'
-                        : 'border-neutral-800 bg-neutral-800/50 text-neutral-400 hover:border-neutral-600 hover:text-neutral-300',
-                    )}
-                  >
-                    <span className="text-base leading-none">
-                      {m === 'Cash' ? '💵' : m === 'Card' ? '💳' : '📱'}
-                    </span>
-                    {m}
-                  </button>
-                ))}
-              </div>
-            </div>
-
-            {/* Total */}
-            <div className="mt-auto border-t border-neutral-800 pt-7">
-              <p className="mb-1 font-mono text-[10px] uppercase tracking-[0.14em] text-neutral-300">
-                Invoice Total
-              </p>
-              <p className="text-4xl font-extrabold leading-none text-stone-100">
-                <span className="text-xl text-orange-500">₹</span>
-                {total.toFixed(2)}
-              </p>
-              <p className="mt-3 font-mono text-xs text-neutral-300">
-                {lines.length} line{lines.length !== 1 ? 's' : ''} · {paymentMethod}
-              </p>
-            </div>
-          </aside>
-
-          {/* ─── RIGHT PANEL — white, billing items ─── */}
+          {/* ─── LEFT PANEL — white, billing items ─── */}
           <main className="flex flex-1 flex-col overflow-hidden bg-white">
 
             {/* Section label */}
@@ -531,8 +457,83 @@ export function Billing() {
               </button>
             </div>
           </main>
+
+          {/* ─── RIGHT PANEL — dark, customer details ─── */}
+          <aside className="flex w-72 shrink-0 flex-col gap-0 bg-neutral-900 p-7 xl:w-80">
+
+            {/* Section label */}
+            <div className="mb-6 flex items-center gap-3">
+              <span className="font-mono text-[10px] uppercase tracking-[0.14em] text-neutral-300">
+                Customer
+              </span>
+              <span className="h-px flex-1 bg-neutral-500" />
+            </div>
+
+            {/* Name */}
+            <div className="mb-4">
+              <label className={labelDarkClass}>Name</label>
+              <input
+                value={partyName}
+                onChange={(e) => setPartyName(e.target.value)}
+                placeholder="Party or customer"
+                className={inputDark}
+              />
+            </div>
+
+            {/* Phone */}
+            <div className="mb-4">
+              <label className={labelDarkClass}>Phone</label>
+              <input
+                value={phoneNo}
+                onChange={(e) => setPhoneNo(e.target.value)}
+                placeholder="Optional"
+                inputMode="numeric"
+                className={inputDark}
+              />
+            </div>
+
+            {/* Payment method */}
+            <div className="mb-4">
+              <label className={labelDarkClass} style={{ marginBottom: '0.75rem' }}>
+                Payment
+              </label>
+              <div className="grid grid-cols-3 gap-2">
+                {(['Cash', 'Card', 'UPI'] as PaymentMethod[]).map((m) => (
+                  <button
+                    key={m}
+                    onClick={() => setPaymentMethod(m)}
+                    className={cx(
+                      'flex flex-col items-center gap-1 rounded-lg border py-3 font-mono text-xs transition-all',
+                      paymentMethod === m
+                        ? 'border-orange-600 bg-orange-600/10 text-orange-500'
+                        : 'border-neutral-800 bg-neutral-800/50 text-neutral-400 hover:border-neutral-600 hover:text-neutral-300',
+                    )}
+                  >
+                    <span className="text-base leading-none">
+                      {m === 'Cash' ? '💵' : m === 'Card' ? '💳' : '📱'}
+                    </span>
+                    {m}
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            {/* Total */}
+            <div className="mt-auto border-t border-neutral-800 pt-7">
+              <p className="mb-1 font-mono text-[10px] uppercase tracking-[0.14em] text-neutral-300">
+                Invoice Total
+              </p>
+              <p className="text-4xl font-extrabold leading-none text-stone-100">
+                <span className="text-xl text-orange-500">₹</span>
+                {total.toFixed(2)}
+              </p>
+              <p className="mt-3 font-mono text-xs text-neutral-300">
+                {lines.length} line{lines.length !== 1 ? 's' : ''} · {paymentMethod}
+              </p>
+            </div>
+          </aside>
         </div>
       )}
-    </div>
+    </Page>
   );
 }

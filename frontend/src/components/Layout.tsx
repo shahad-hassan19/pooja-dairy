@@ -121,7 +121,7 @@ export function Layout() {
     <div className="min-h-screen">
 
       {/* ── Fixed full-height sidebar (desktop) ── */}
-      <aside className="hidden lg:flex flex-col fixed inset-y-0 left-0 z-40 w-64 border-r border-cream-dark bg-cream-light/50">
+      <aside className={` ${sidebarOpen ? "flex" : "hidden" } flex flex-col fixed inset-y-0 left-0 z-40 w-64 border-r border-cream-dark bg-cream-light/50 transition-all duration-700 `}>
         <div className="px-4 py-6 flex flex-col h-full">
           <Link to="/" className="group inline-flex items-center gap-2.5 mb-6">
             <span className="inline-flex h-9 w-9 items-center justify-center rounded-xl bg-brand text-white text-sm font-bold shadow-card">
@@ -154,7 +154,7 @@ export function Layout() {
       </aside>
 
       {/* ── Content area offset by sidebar width ── */}
-      <div className="lg:pl-64 flex flex-col min-h-screen">
+      <div className={` ${sidebarOpen ? "lg:pl-64" : "pl-0"} transition-all duration-700 flex flex-col min-h-screen`}>
 
         {/* ── Sticky header (spans remaining width only) ── */}
         <header className="sticky top-0 z-30 border-b border-cream-dark bg-cream-light/95 backdrop-blur-sm shadow-card">
@@ -163,13 +163,22 @@ export function Layout() {
               {/* Mobile hamburger */}
               <button
                 type="button"
-                className="inline-flex h-10 w-10 items-center justify-center rounded-xl border border-cream-dark bg-cream text-ink/70 hover:bg-cream-dark hover:text-ink lg:hidden"
-                onClick={() => setSidebarOpen(true)}
+                className={`inline-flex h-10 w-10 items-center justify-center rounded-xl border border-cream-dark bg-cream text-ink/70 hover:bg-cream-dark hover:text-ink`}
+                onClick={() => setSidebarOpen(prev => !prev)}
                 aria-label="Open menu"
               >
                 <span className="sr-only">Open menu</span>
                 <span className="block h-[2px] w-5 bg-ink/60 relative before:content-[''] before:absolute before:-top-2 before:left-0 before:h-[2px] before:w-5 before:bg-ink/60 after:content-[''] after:absolute after:top-2 after:left-0 after:h-[2px] after:w-5 after:bg-ink/60" />
               </button>
+
+              <Link to="/" className={`${sidebarOpen ? "hidden": "group hidden md:inline-flex items-center gap-2.5 my-6"} `}>
+                <span className="inline-flex h-9 w-9 items-center justify-center rounded-xl bg-brand text-white text-sm font-bold shadow-card">
+                  PD
+                </span>
+                <span className="text-sm font-semibold tracking-tight text-ink group-hover:text-brand">
+                  Pooja Dairy
+                </span>
+              </Link>
 
               {/* Breadcrumb */}
               <Breadcrumb />
