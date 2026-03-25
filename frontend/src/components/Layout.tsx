@@ -7,7 +7,7 @@ import { Button } from './ui/Button';
 
 const navByRole: Record<Role, { to: string; label: string }[]> = {
   ADMIN: [
-    { to: '/', label: 'Dashboard' },
+    { to: '/dashboard', label: 'Dashboard' },
     { to: '/shops', label: 'Shops' },
     { to: '/users', label: 'Users' },
     { to: '/billing', label: 'Billing' },
@@ -24,7 +24,7 @@ const navByRole: Record<Role, { to: string; label: string }[]> = {
     { to: '/transfers', label: 'Transfers' },
   ],
   ACCOUNTS: [
-    { to: '/', label: 'Dashboard' },
+    { to: '/dashboard', label: 'Dashboard' },
     { to: '/audit', label: 'Audit' },
   ],
 };
@@ -123,14 +123,14 @@ export function Layout() {
       {/* ── Fixed full-height sidebar (desktop) ── */}
       <aside className={` ${sidebarOpen ? "flex" : "hidden" } flex flex-col fixed inset-y-0 left-0 z-40 w-64 border-r border-cream-dark bg-cream-light/50 transition-all duration-700 `}>
         <div className="px-4 py-6 flex flex-col h-full">
-          <Link to="/" className="group inline-flex items-center gap-2.5 mb-6">
+          <div className="group inline-flex items-center gap-2.5 mb-6">
             <span className="inline-flex h-9 w-9 items-center justify-center rounded-xl bg-brand text-white text-sm font-bold shadow-card">
               PD
             </span>
             <span className="text-sm font-semibold tracking-tight text-ink group-hover:text-brand">
               Pooja Dairy
             </span>
-          </Link>
+          </div>
           <nav className="space-y-0.5 flex-1">
             {navItems.map(({ to, label }) => (
               <Link
@@ -171,14 +171,14 @@ export function Layout() {
                 <span className="block h-[2px] w-5 bg-ink/60 relative before:content-[''] before:absolute before:-top-2 before:left-0 before:h-[2px] before:w-5 before:bg-ink/60 after:content-[''] after:absolute after:top-2 after:left-0 after:h-[2px] after:w-5 after:bg-ink/60" />
               </button>
 
-              <Link to="/" className={`${sidebarOpen ? "hidden": "group hidden md:inline-flex items-center gap-2.5 my-6"} `}>
+              <div className={`${sidebarOpen ? "hidden": "group hidden md:inline-flex items-center gap-2.5 my-6"} `}>
                 <span className="inline-flex h-9 w-9 items-center justify-center rounded-xl bg-brand text-white text-sm font-bold shadow-card">
                   PD
                 </span>
                 <span className="text-sm font-semibold tracking-tight text-ink group-hover:text-brand">
                   Pooja Dairy
                 </span>
-              </Link>
+              </div>
 
               {/* Breadcrumb */}
               <Breadcrumb />

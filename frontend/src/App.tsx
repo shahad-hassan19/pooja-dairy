@@ -9,10 +9,10 @@ import { Users } from './pages/Users';
 import { Inventory } from './pages/Inventory';
 import { Billing } from './pages/Billing';
 import { Transfers } from './pages/Transfers';
-import { Reports } from './pages/Reports';
 import { Audit } from './pages/Audit';
 import { useAuth } from './auth/useAuth.ts';
 import { Homepage } from './pages/Homepage.tsx';
+import { Dashboard } from './pages/Dashboard.tsx';
 
 function RootRoute() {
   const { user, isReady } = useAuth();
@@ -21,11 +21,11 @@ function RootRoute() {
   if (!user) return <Homepage />;
 
   switch (user.role) {
-    case 'SALES':         return <Navigate to="/billing" replace />;
+    case 'SALES': return <Navigate to="/billing" replace />;
     case 'STOCK_MANAGER': return <Navigate to="/transfers" replace />;
-    case 'ACCOUNTS':      return <Navigate to="/audit" replace />;
-    case 'ADMIN':         return <Navigate to="/dashboard" replace />;
-    default:              return <Navigate to="/inventory" replace />;
+    case 'ACCOUNTS': return <Navigate to="/audit" replace />;
+    case 'ADMIN': return <Navigate to="/dashboard" replace />;
+    default: return <Navigate to="/inventory" replace />;
   }
 }
 
@@ -47,7 +47,7 @@ function App() {
               </ProtectedRoute>
             }
           >
-            <Route path="dashboard" element={<ProtectedRoute roles={['ADMIN', 'ACCOUNTS']}><Reports/></ProtectedRoute>} />
+            <Route path="dashboard" element={<ProtectedRoute roles={['ADMIN', 'ACCOUNTS']}><Dashboard/></ProtectedRoute>} />
             <Route path="shops" element={<ProtectedRoute roles={['ADMIN']}><Shops /></ProtectedRoute>} />
             <Route path="users" element={<ProtectedRoute roles={['ADMIN']}><Users /></ProtectedRoute>} />
             <Route path="inventory" element={<Inventory />} />
