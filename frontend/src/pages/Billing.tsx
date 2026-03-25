@@ -5,6 +5,7 @@ import type { Item } from '../types';
 import type { InvoiceItemInput } from '../types';
 import { cx } from '../lib/cx';
 import { Page } from '../components/ui/Page';
+import './Billing.css';
 
 type PaymentMethod = 'Cash' | 'Card' | 'UPI';
 type BillCounterState = { date: string; seq: number };
@@ -28,6 +29,131 @@ const inputDark = [
 
 const labelClass = 'block mb-1.5 text-[10px] uppercase tracking-widest text-stone-700 font-medium';
 const labelDarkClass = 'block mb-1.5 text-[10px] uppercase tracking-widest text-neutral-300 font-medium';
+
+/* ── Thermal Receipt (hidden on screen, visible only when printing) ── */
+function ThermalReceipt({
+  billNo, billDate, shopName, partyName, phoneNo, paymentMethod, lines, items, total,
+}: {
+  billNo: number; billDate: string; shopName: string;
+  partyName: string; phoneNo: string; paymentMethod: string;
+  lines: Array<InvoiceItemInput & { unit?: string; gstPercent?: number; totalAmount?: number }>;
+  items: Item[]; total: number;
+}) {
+  const dateStr = new Date(billDate + 'T00:00:00').toLocaleDateString('en-IN', {
+    day: '2-digit', month: 'short', year: 'numeric',
+  });
+  const timeStr = new Date().toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit' });
+  const totalGst = lines.reduce((s, l) => {
+    const base = l.quantity * l.price;
+    return s + base * ((l.gstPercent ?? 0) / 100);
+  }, 0);
+  const subTotal = total - totalGst;
+
+  return (
+    <div id="thermal-receipt" className="thermal-receipt">
+      {/* Header */}
+      <div className="receipt-header">
+        <div className="receipt-brand">Pooja Dairy</div>
+        <div className="receipt-shop">{shopName}</div>
+        <div className="receipt-address">B-12, Sector 63, Noida, UP 201301</div>
+        <div className="receipt-address">Ph: +91 98765 43210</div>
+        <div className="receipt-address">GSTIN: 09ABCDE1234F1Z5</div>
+      </div>
+
+      <div className="receipt-divider">{'─'.repeat(48)}</div>
+
+      {/* Bill info */}
+      <div className="receipt-meta">
+        <div className="receipt-meta-row">
+          <span>Bill No:</span>
+          <span>#{String(billNo).padStart(4, '0')}</span>
+        </div>
+        <div className="receipt-meta-row">
+          <span>Date:</span>
+          <span>{dateStr} {timeStr}</span>
+        </div>
+        {partyName && (
+          <div className="receipt-meta-row">
+            <span>Customer:</span>
+            <span>{partyName}</span>
+          </div>
+        )}
+        {phoneNo && (
+          <div className="receipt-meta-row">
+            <span>Phone:</span>
+            <span>{phoneNo}</span>
+          </div>
+        )}
+      </div>
+
+      <div className="receipt-divider">{'─'.repeat(48)}</div>
+
+      {/* Items table */}
+      <table className="receipt-table">
+        <thead>
+          <tr>
+            <th className="receipt-th-left">Item</th>
+            <th className="receipt-th-right">Qty</th>
+            <th className="receipt-th-right">Rate</th>
+            <th className="receipt-th-right">Amt</th>
+          </tr>
+        </thead>
+        <tbody>
+          {lines.map((line, i) => {
+            const it = items.find((x) => x.id === line.itemId);
+            const amount = line.totalAmount ?? line.quantity * line.price;
+            return (
+              <tr key={i}>
+                <td className="receipt-td-left">{it?.name ?? '—'}</td>
+                <td className="receipt-td-right">{line.quantity}</td>
+                <td className="receipt-td-right">{Number(line.price).toFixed(0)}</td>
+                <td className="receipt-td-right">{amount.toFixed(2)}</td>
+              </tr>
+            );
+          })}
+        </tbody>
+      </table>
+
+      <div className="receipt-divider">{'─'.repeat(48)}</div>
+
+      {/* Totals */}
+      <div className="receipt-totals">
+        {totalGst > 0 && (
+          <>
+            <div className="receipt-meta-row">
+              <span>Sub Total:</span>
+              <span>₹{subTotal.toFixed(2)}</span>
+            </div>
+            <div className="receipt-meta-row">
+              <span>GST:</span>
+              <span>₹{totalGst.toFixed(2)}</span>
+            </div>
+          </>
+        )}
+        <div className="receipt-grand-total">
+          <span>TOTAL</span>
+          <span>₹{total.toFixed(2)}</span>
+        </div>
+      </div>
+
+      <div className="receipt-divider">{'─'.repeat(48)}</div>
+
+      {/* Payment */}
+      <div className="receipt-payment">
+        Paid via {paymentMethod}
+      </div>
+
+      {/* Footer */}
+      <div className="receipt-footer">
+        <div>Thank you for shopping with us!</div>
+        <div className="receipt-footer-sub">Goods once sold will not be returned or exchanged.</div>
+        <div className="receipt-footer-sub" style={{ marginTop: '1mm' }}>www.poojadairy.in · +91 98765 43210</div>
+      </div>
+
+      <div className="receipt-cut">✂{'┈'.repeat(23)}</div>
+    </div>
+  );
+}
 
 export function Billing() {
   const { shopId, shops, setShopId, isAdmin } = useShop();
@@ -534,6 +660,19 @@ export function Billing() {
           </aside>
         </div>
       )}
+
+      {/* Thermal receipt — hidden on screen, shown only when printing */}
+      <ThermalReceipt
+        billNo={billNo}
+        billDate={billDate}
+        shopName={shops.find((s) => s.id === shopId)?.name ?? 'Pooja Dairy'}
+        partyName={partyName}
+        phoneNo={phoneNo}
+        paymentMethod={paymentMethod}
+        lines={lines}
+        items={items}
+        total={total}
+      />
     </Page>
   );
 }

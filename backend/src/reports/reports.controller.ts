@@ -44,6 +44,24 @@ export class ReportsController {
     return this.reportsService.getRevenueByShop();
   }
 
+  @Get('admin/dashboard-summary')
+  @Roles(Role.ADMIN)
+  getDashboardSummary(@Query('period') period?: string) {
+    return this.reportsService.getDashboardSummary(period || 'today');
+  }
+
+  @Get('admin/sales-trend-by-shop')
+  @Roles(Role.ADMIN)
+  getSalesTrendByShop(@Query('period') period?: string) {
+    return this.reportsService.getSalesTrendByShop(period || 'weekly');
+  }
+
+  @Get('admin/:shopId/inventory-intelligence')
+  @Roles(Role.ADMIN)
+  getInventoryIntelligence(@Param('shopId') shopId: string) {
+    return this.reportsService.getShopInventoryIntelligence(shopId);
+  }
+
   @Get('admin/top-items')
   @Roles(Role.ADMIN)
   getTopItems() {
