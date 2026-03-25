@@ -10,6 +10,7 @@ datasource db {
 model Shop {
   id        String   @id @default(uuid())
   name      String
+  location  String?
   type      ShopType
   createdAt DateTime @default(now())
 

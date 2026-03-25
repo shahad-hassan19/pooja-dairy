@@ -4,6 +4,7 @@ export type ShopType = 'DISTRIBUTOR' | 'RETAIL';
 export interface Shop {
   id: string;
   name: string;
+  location?: string;
   type: ShopType;
   createdAt: string;
 }

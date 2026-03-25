@@ -21,6 +21,7 @@ export class ShopsService {
     return await this.prisma.shop.create({
       data: {
         name: dto.name,
+        location: dto.location,
         type: dto.type,
       },
     });
