@@ -16,7 +16,7 @@ function shortId(id: string) {
 
 export function Reports() {
   const { hasRole } = useAuth();
-  const { shopId, shops, setShopId, isAdmin } = useShop();
+  const { shopId, shops, isAdmin } = useShop();
   const [startDate, setStartDate] = useState('');
   const [endDate, setEndDate] = useState('');
   const [sales, setSales] = useState<{ totalRevenue: number; totalInvoices: number } | null>(null);
@@ -92,13 +92,9 @@ export function Reports() {
         for (const it of items) next[it.id] = it.name;
         setItemNameById((prev) => ({ ...prev, ...next }));
       })
-      .catch(() => {
-        // Best-effort only; fall back to IDs.
-      });
+      .catch(() => {});
 
-    return () => {
-      cancelled = true;
-    };
+    return () => { cancelled = true; };
   }, [shopId, stockSummary, itemNameById]);
 
   return (
@@ -106,21 +102,6 @@ export function Reports() {
       <PageHeader
         title="Dashboard"
         description="Sales, stock, and transfer summaries."
-        right={
-          isAdmin && shops.length > 0 ? (
-            <div className="min-w-[240px]">
-              <Field label="Shop">
-                <select value={shopId || ''} onChange={(e) => setShopId(e.target.value)} className={inputClass}>
-                  {shops.map((s) => (
-                    <option key={s.id} value={s.id}>
-                      {s.name}
-                    </option>
-                  ))}
-                </select>
-              </Field>
-            </div>
-          ) : null
-        }
       />
 
       {error ? <Callout tone="danger">{error}</Callout> : null}
@@ -221,7 +202,7 @@ export function Reports() {
       {isAdmin ? (
         <div className="grid gap-4 lg:grid-cols-2">
           <Card className="p-5">
-            <div className="text-sm font-semibold text-ink">Admin — Global revenue</div>
+            <div className="text-sm font-semibold text-ink">Global revenue</div>
             <div className="mt-4 grid grid-cols-2 gap-3">
               <Card className="p-4">
                 <div className="text-xs uppercase tracking-wider text-ink/60">Total revenue</div>
@@ -248,7 +229,7 @@ export function Reports() {
                 <Table>
                   <thead className="bg-cream-dark/50">
                     <tr>
-                      <Th>Shop ID</Th>
+                      <Th>Shop</Th>
                       <Th>Revenue</Th>
                     </tr>
                   </thead>

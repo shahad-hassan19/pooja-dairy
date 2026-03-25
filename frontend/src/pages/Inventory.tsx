@@ -5,7 +5,7 @@ import type { Item } from '../types';
 import { Button } from '../components/ui/Button';
 import { Card } from '../components/ui/Card';
 import { Field, inputClass } from '../components/ui/Field';
-import { Callout, Page, PageHeader } from '../components/ui/Page';
+import { Callout, Page } from '../components/ui/Page';
 import { Table, TableWrap, Td, Th } from '../components/ui/Table';
 import { cx } from '../lib/cx';
 
@@ -93,32 +93,40 @@ export function Inventory() {
 
   return (
     <Page className="space-y-6">
-      <PageHeader
-        title="Inventory"
-        description="Items and stock levels for the selected shop."
-        right={
-          <div className="flex flex-col gap-3 sm:flex-row sm:items-end">
-            {isAdmin && shops.length > 0 ? (
-              <div className="min-w-[240px]">
-                <Field label="Shop">
-                  <select value={shopId || ''} onChange={(e) => setShopId(e.target.value)} className={inputClass}>
-                    {shops.map((s) => (
-                      <option key={s.id} value={s.id}>
-                        {s.name}
-                      </option>
-                    ))}
-                  </select>
-                </Field>
-              </div>
-            ) : null}
-            {shopId ? (
-              <Button variant="primary" onClick={() => setShowItemForm(true)}>
-                Add item
-              </Button>
-            ) : null}
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-center justify-between w-full">
+        {isAdmin && shops.length > 0 ? (
+          <div className="flex flex-wrap gap-2">
+            {shops.slice().sort((a, b) => a.name.localeCompare(b.name)).map((s) => {
+              const active = shopId === s.id;
+              return (
+                <button
+                  key={s.id}
+                  onClick={() => setShopId(s.id)}
+                  style={{
+                    borderRadius: '9999px',
+                    padding: '6px 14px',
+                    fontSize: '12px',
+                    fontWeight: 500,
+                    border: 'none',
+                    cursor: 'pointer',
+                    transition: 'all 0.15s',
+                    background: active ? 'var(--color-ink, #1a1a1a)' : 'rgba(0,0,0,0.06)',
+                    color: active ? '#fff' : 'rgba(0,0,0,0.55)',
+                    boxShadow: active ? '0 1px 3px rgba(0,0,0,0.15)' : 'none',
+                  }}
+                >
+                  {s.name}
+                </button>
+              );
+            })}
           </div>
-        }
-      />
+        ) : null}
+        {shopId ? (
+          <Button variant="primary" onClick={() => setShowAdjustForm(true)}>
+            Add user
+          </Button>
+        ) : null}
+      </div>
 
       {error ? <Callout tone="danger">{error}</Callout> : null}
       {!shopId && !isAdmin ? <Callout tone="danger">No shop assigned.</Callout> : null}

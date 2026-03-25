@@ -12,23 +12,30 @@ import { Transfers } from './pages/Transfers';
 import { Reports } from './pages/Reports';
 import { Audit } from './pages/Audit';
 import { useAuth } from './auth/useAuth.ts';
+import { Homepage } from './pages/Homepage.tsx';
 
-function IndexRoute() {
+function RootRoute() {
   const { user, isReady } = useAuth();
 
   if (!isReady) return null;
-  if (!user) return <Navigate to="/login" replace />;
+  if (!user) return <Homepage />;
 
-  if (user.role === 'SALES') return <Billing />;
-
-  return <Reports />;
+  switch (user.role) {
+    case 'SALES':         return <Navigate to="/billing" replace />;
+    case 'STOCK_MANAGER': return <Navigate to="/transfers" replace />;
+    case 'ACCOUNTS':      return <Navigate to="/audit" replace />;
+    case 'ADMIN':         return <Navigate to="/dashboard" replace />;
+    default:              return <Navigate to="/inventory" replace />;
+  }
 }
+
 
 function App() {
   return (
     <BrowserRouter>
       <AuthProvider>
         <Routes>
+          <Route path="/" element={<RootRoute />} />
           <Route path="/login" element={<Login />} />
           <Route
             path="/"
@@ -40,7 +47,7 @@ function App() {
               </ProtectedRoute>
             }
           >
-            <Route index element={<IndexRoute />} />
+            <Route path="dashboard" element={<ProtectedRoute roles={['ADMIN', 'ACCOUNTS']}><Reports/></ProtectedRoute>} />
             <Route path="shops" element={<ProtectedRoute roles={['ADMIN']}><Shops /></ProtectedRoute>} />
             <Route path="users" element={<ProtectedRoute roles={['ADMIN']}><Users /></ProtectedRoute>} />
             <Route path="inventory" element={<Inventory />} />

@@ -111,7 +111,7 @@ export function Layout() {
 
   const handleLogout = () => {
     logout();
-    navigate('/login');
+    navigate('/');
   };
 
   const isActive = (to: string) =>

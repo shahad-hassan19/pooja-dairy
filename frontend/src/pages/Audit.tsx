@@ -3,8 +3,7 @@ import { apiGet } from '../api/client';
 import { useShop } from '../contexts/useShop';
 import type { AuditLogRecord, Item, User } from '../types';
 import { Card } from '../components/ui/Card';
-import { Field, inputClass } from '../components/ui/Field';
-import { Callout, Page, PageHeader } from '../components/ui/Page';
+import { Callout, Page } from '../components/ui/Page';
 import { Table, TableWrap, Td, Th } from '../components/ui/Table';
 
 function shortId(id: string) {
@@ -111,41 +110,40 @@ export function Audit() {
       if (Object.keys(nextItems).length > 0) {
         setItemNameById((prev) => ({ ...prev, ...nextItems }));
       }
-    })().catch(() => {
-      // Best-effort name lookups; fall back to raw IDs if unavailable.
-    });
+    })().catch(() => {});
 
     return () => {
       cancelled = true;
     };
   }, [logs, userNameById, itemNameById, isAdmin]);
 
+  const pillStyle = (active: boolean): React.CSSProperties => ({
+    borderRadius: '9999px',
+    padding: '6px 14px',
+    fontSize: '12px',
+    fontWeight: 500,
+    border: 'none',
+    cursor: 'pointer',
+    transition: 'all 0.15s',
+    background: active ? 'var(--color-ink, #1a1a1a)' : 'rgba(0,0,0,0.06)',
+    color: active ? '#fff' : 'rgba(0,0,0,0.55)',
+    boxShadow: active ? '0 1px 3px rgba(0,0,0,0.15)' : 'none',
+  });
+
   return (
     <Page className="space-y-6">
-      <PageHeader
-        title="Audit log"
-        description="Activity history for the selected scope."
-        right={
-          isAdmin && shops.length > 0 ? (
-            <div className="min-w-[260px]">
-              <Field label="Scope">
-                <select
-                  value={shopId ? shopId : '__all__'}
-                  onChange={(e) => setShopId(e.target.value === '__all__' ? '' : e.target.value)}
-                  className={inputClass}
-                >
-                  <option value="__all__">All shops</option>
-                  {shops.map((s) => (
-                    <option key={s.id} value={s.id}>
-                      {s.name}
-                    </option>
-                  ))}
-                </select>
-              </Field>
-            </div>
-          ) : null
-        }
-      />
+      {isAdmin && shops.length > 0 ? (
+        <div className="flex flex-wrap gap-2">
+          <button onClick={() => setShopId('')} style={pillStyle(!shopId)}>
+            All
+          </button>
+          {shops.slice().sort((a, b) => a.name.localeCompare(b.name)).map((s) => (
+            <button key={s.id} onClick={() => setShopId(s.id)} style={pillStyle(shopId === s.id)}>
+              {s.name}
+            </button>
+          ))}
+        </div>
+      ) : null}
 
       {error ? <Callout tone="danger">{error}</Callout> : null}
 
