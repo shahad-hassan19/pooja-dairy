@@ -122,8 +122,8 @@ export function Inventory() {
           </div>
         ) : null}
         {shopId ? (
-          <Button variant="primary" onClick={() => setShowAdjustForm(true)}>
-            Add user
+          <Button variant="primary" onClick={() => setShowItemForm(true)}>
+            Add Item
           </Button>
         ) : null}
       </div>
