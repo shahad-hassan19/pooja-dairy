@@ -169,8 +169,8 @@ export class ReportsService {
       orderBy: { createdAt: 'asc' },
     });
 
-    const { current: periodStart, previous: prevStart } = this.getPeriodRange(period);
-    const now = new Date();
+    const { current: periodStart, previous: prevStart } =
+      this.getPeriodRange(period);
 
     const summaries = await Promise.all(
       shops.map(async (shop) => {
@@ -204,7 +204,12 @@ export class ReportsService {
 
         const currentRev = Number(revenue._sum.total ?? 0);
         const prevRev = Number(prevRevenue._sum.total ?? 0);
-        const delta = prevRev > 0 ? ((currentRev - prevRev) / prevRev) * 100 : currentRev > 0 ? 100 : 0;
+        const delta =
+          prevRev > 0
+            ? ((currentRev - prevRev) / prevRev) * 100
+            : currentRev > 0
+              ? 100
+              : 0;
 
         return {
           shopId: shop.id,
@@ -247,7 +252,8 @@ export class ReportsService {
         };
         prefill = () => {
           const m: Record<string, number> = {};
-          for (let h = 0; h < 24; h += 3) m[`${h.toString().padStart(2, '0')}:00`] = 0;
+          for (let h = 0; h < 24; h += 3)
+            m[`${h.toString().padStart(2, '0')}:00`] = 0;
           return m;
         };
         break;
@@ -408,9 +414,7 @@ export class ReportsService {
         revenue: Number(r._sum.price ?? 0) * (r._sum.quantity ?? 0),
         pctOfTotal:
           totalSoldQty > 0
-            ? Math.round(
-                ((r._sum.quantity ?? 0) / totalSoldQty) * 1000,
-              ) / 10
+            ? Math.round(((r._sum.quantity ?? 0) / totalSoldQty) * 1000) / 10
             : 0,
       };
     });
@@ -422,16 +426,17 @@ export class ReportsService {
       orderBy: { createdAt: 'desc' },
     });
     // Also get transfers IN
-    const transfersIn = await this.prisma.transfer.findMany({
-      where: { toShopId: shopId },
-      include: { items: true },
-      orderBy: { createdAt: 'desc' },
-    });
+    // const transfersIn = await this.prisma.transfer.findMany({
+    //   where: { toShopId: shopId },
+    //   include: { items: true },
+    //   orderBy: { createdAt: 'desc' },
+    // });
 
     const dispatchMap: Record<string, { count: number; totalQty: number }> = {};
     for (const t of transfersOut) {
       for (const ti of t.items) {
-        if (!dispatchMap[ti.itemId]) dispatchMap[ti.itemId] = { count: 0, totalQty: 0 };
+        if (!dispatchMap[ti.itemId])
+          dispatchMap[ti.itemId] = { count: 0, totalQty: 0 };
         dispatchMap[ti.itemId].count += 1;
         dispatchMap[ti.itemId].totalQty += ti.quantity;
       }
@@ -455,12 +460,25 @@ export class ReportsService {
       where: { shopId, itemId: { in: itemIds } },
     });
 
-    const logsByItem: Record<string, {
-      stockIn: number; saleDeductions: number; transferOut: number; otherOut: number; currentStock: number;
-    }> = {};
+    const logsByItem: Record<
+      string,
+      {
+        stockIn: number;
+        saleDeductions: number;
+        transferOut: number;
+        otherOut: number;
+        currentStock: number;
+      }
+    > = {};
 
     for (const id of itemIds) {
-      logsByItem[id] = { stockIn: 0, saleDeductions: 0, transferOut: 0, otherOut: 0, currentStock: 0 };
+      logsByItem[id] = {
+        stockIn: 0,
+        saleDeductions: 0,
+        transferOut: 0,
+        otherOut: 0,
+        currentStock: 0,
+      };
     }
 
     for (const log of stockLogs) {
@@ -507,18 +525,26 @@ export class ReportsService {
         otherLoss: l.otherOut,
         currentStock: l.currentStock,
         unaccounted,
-        flag: absUnaccounted === 0 ? 'ok' : absUnaccounted <= 5 ? 'warning' : ('critical' as const),
+        flag:
+          absUnaccounted === 0
+            ? 'ok'
+            : absUnaccounted <= 5
+              ? 'warning'
+              : ('critical' as const),
       };
     });
 
     const flagOrder = { critical: 0, warning: 1, ok: 2 };
     reconciliation.sort(
-      (a, b) => flagOrder[a.flag] - flagOrder[b.flag] || Math.abs(b.unaccounted) - Math.abs(a.unaccounted),
+      (a, b) =>
+        flagOrder[a.flag] - flagOrder[b.flag] ||
+        Math.abs(b.unaccounted) - Math.abs(a.unaccounted),
     );
 
     const flaggedItems = reconciliation.filter((r) => r.flag !== 'ok').length;
     const totalVarianceValue = reconciliation.reduce(
-      (s, r) => s + Math.abs(r.unaccounted) * r.price, 0,
+      (s, r) => s + Math.abs(r.unaccounted) * r.price,
+      0,
     );
 
     // 5. Peak hours analysis
@@ -527,7 +553,8 @@ export class ReportsService {
       select: { createdAt: true, total: true },
     });
 
-    const hourlyRevenue: Record<number, { count: number; revenue: number }> = {};
+    const hourlyRevenue: Record<number, { count: number; revenue: number }> =
+      {};
     const dailyRevenue: Record<number, { count: number; revenue: number }> = {};
     for (let h = 0; h < 24; h++) hourlyRevenue[h] = { count: 0, revenue: 0 };
     for (let d = 0; d < 7; d++) dailyRevenue[d] = { count: 0, revenue: 0 };
@@ -548,7 +575,12 @@ export class ReportsService {
       .sort((a, b) => b.revenue - a.revenue)
       .slice(0, 5)
       .map((h) => ({
-        label: h.hour < 12 ? `${h.hour || 12}am` : h.hour === 12 ? '12pm' : `${h.hour - 12}pm`,
+        label:
+          h.hour < 12
+            ? `${h.hour || 12}am`
+            : h.hour === 12
+              ? '12pm'
+              : `${h.hour - 12}pm`,
         orders: h.count,
         revenue: h.revenue,
       }));

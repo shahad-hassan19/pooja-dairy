@@ -65,36 +65,16 @@ export class TransfersService {
       });
 
       for (const item of dto.items) {
-        // Get distributor item to find/create same product at retail
-        const distributorItem = await tx.item.findFirst({
-          where: {
-            id: item.itemId,
-            shopId: dto.fromShopId,
-          },
+        // Items are global per SKU.
+        // Use the provided itemId (canonical item record) for both shops.
+        const distributorItem = await tx.item.findUnique({
+          where: { id: item.itemId },
         });
 
         if (!distributorItem) {
           throw new BadRequestException(
             `Item ${item.itemId} not found at distributor`,
           );
-        }
-
-        // Find or create the item at the retail shop (same SKU)
-        let retailItem = await tx.item.findUnique({
-          where: {
-            sku_shopId: { sku: distributorItem.sku, shopId: dto.toShopId },
-          },
-        });
-
-        if (!retailItem) {
-          retailItem = await tx.item.create({
-            data: {
-              name: distributorItem.name,
-              sku: distributorItem.sku,
-              price: distributorItem.price,
-              shopId: dto.toShopId,
-            },
-          });
         }
 
         await tx.transferItem.create({
@@ -120,7 +100,7 @@ export class TransfersService {
         await tx.stockLog.create({
           data: {
             shopId: dto.toShopId,
-            itemId: retailItem.id,
+            itemId: distributorItem.id,
             change: item.quantity,
             reason: 'TRANSFER_IN',
             referenceId: transfer.id,
