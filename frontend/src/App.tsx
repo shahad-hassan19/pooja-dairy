@@ -52,7 +52,7 @@ function App() {
             <Route path="users" element={<ProtectedRoute roles={['ADMIN']}><Users /></ProtectedRoute>} />
             <Route path="inventory" element={<Inventory />} />
             <Route path="billing" element={<ProtectedRoute roles={['SALES', 'ADMIN']}><Billing /></ProtectedRoute>} />
-            <Route path="transfers" element={<ProtectedRoute roles={['STOCK_MANAGER', 'ADMIN']}><Transfers /></ProtectedRoute>} />
+            <Route path="transfers" element={<ProtectedRoute roles={['STOCK_MANAGER', 'ADMIN', 'SALES']}><Transfers /></ProtectedRoute>} />
             <Route path="audit" element={<ProtectedRoute roles={['ACCOUNTS', 'ADMIN']}><Audit /></ProtectedRoute>} />
           </Route>
           <Route path="*" element={<Navigate to="/" replace />} />

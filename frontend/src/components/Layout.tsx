@@ -17,6 +17,7 @@ const navByRole: Record<Role, { to: string; label: string }[]> = {
   ],
   SALES: [
     { to: '/billing', label: 'Billing' },
+    { to: '/transfers', label: 'Transfers' },
     { to: '/inventory', label: 'Inventory' },
   ],
   STOCK_MANAGER: [

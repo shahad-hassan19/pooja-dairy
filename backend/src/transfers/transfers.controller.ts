@@ -1,4 +1,4 @@
-import { Controller, Post, Body, UseGuards } from '@nestjs/common';
+import { Controller, Post, Body, UseGuards, Get, Param } from '@nestjs/common';
 import { TransfersService } from './transfers.service';
 import { CreateTransferDto } from './dto/create-transfer.dto';
 import { JwtAuthGuard } from '../common/guards/jwt.guard';
@@ -19,5 +19,22 @@ export class TransfersController {
     @Body() dto: CreateTransferDto,
   ) {
     return this.transfersService.createTransfer(user, dto);
+  }
+
+  @Get('pending')
+  incomingPending(@CurrentUser() user: JwtPayload) {
+    return this.transfersService.incomingPending(user);
+  }
+
+  @Get('outgoing')
+  @Roles(Role.STOCK_MANAGER, Role.ADMIN)
+  outgoing(@CurrentUser() user: JwtPayload) {
+    return this.transfersService.outgoing(user);
+  }
+
+  @Post(':id/confirm')
+  @Roles(Role.SALES)
+  confirm(@CurrentUser() user: JwtPayload, @Param('id') id: string) {
+    return this.transfersService.confirmTransfer(user, id);
   }
 }

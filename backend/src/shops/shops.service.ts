@@ -33,6 +33,20 @@ export class ShopsService {
     });
   }
 
+  async getRetailShops(): Promise<Shop[]> {
+    return await this.prisma.shop.findMany({
+      where: { type: 'RETAIL' },
+      orderBy: { createdAt: 'desc' },
+    });
+  }
+
+  async getShopsByIds(ids: string[]): Promise<Shop[]> {
+    if (ids.length === 0) return [];
+    return await this.prisma.shop.findMany({
+      where: { id: { in: ids } },
+    });
+  }
+
   async deleteShop(id: string): Promise<Shop> {
     try {
       return await this.prisma.shop.delete({

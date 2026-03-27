@@ -43,6 +43,23 @@ export interface TransferItemInput {
   quantity: number;
 }
 
+export type TransferStatus = 'PENDING' | 'CONFIRMED' | 'REJECTED';
+export interface TransferItem {
+  id: string;
+  transferId: string;
+  itemId: string;
+  quantity: number;
+}
+export interface Transfer {
+  id: string;
+  fromShopId: string;
+  toShopId: string;
+  createdById: string;
+  createdAt: string;
+  status: TransferStatus;
+  items: TransferItem[];
+}
+
 export interface AuditLogRecord {
   id: string;
   userId: string;

@@ -6,6 +6,7 @@ import {
   UseGuards,
   Delete,
   Param,
+  Query,
 } from '@nestjs/common';
 import { ShopsService } from './shops.service';
 import { CreateShopDto } from './dto/create-shop.dto';
@@ -28,6 +29,20 @@ export class ShopsController {
   @Roles(Role.ADMIN)
   getAllShops() {
     return this.shopsService.getAllShops();
+  }
+
+  @Get('retail')
+  getRetailShops() {
+    return this.shopsService.getRetailShops();
+  }
+
+  @Get('by-ids')
+  getByIds(@Query('ids') ids: string) {
+    const arr = (ids ?? '')
+      .split(',')
+      .map((s) => s.trim())
+      .filter(Boolean);
+    return this.shopsService.getShopsByIds(arr);
   }
 
   @Delete(':id')

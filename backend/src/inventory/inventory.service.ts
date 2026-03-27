@@ -17,6 +17,15 @@ export class InventoryService {
     private auditService: AuditService,
   ) {}
 
+  async getItemsByIds(ids: string[]) {
+    if (ids.length === 0) return [];
+    return this.prisma.item.findMany({
+      where: { id: { in: ids } },
+      select: { id: true, name: true },
+      orderBy: { name: 'asc' },
+    });
+  }
+
   async createItem(dto: CreateItemDto) {
     // Items are global per SKU. Transfers should not create a new row per shop.
     // If duplicates already exist in the DB, we will reuse the first one we find.

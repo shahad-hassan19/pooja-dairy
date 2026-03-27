@@ -1,7 +1,8 @@
 import { useEffect, useState } from 'react';
 import { apiGet, apiPost } from '../api/client';
+import { useAuth } from '../auth/useAuth';
 import { useShop } from '../contexts/useShop';
-import type { Item } from '../types';
+import type { Item, Shop, Transfer } from '../types';
 import type { TransferItemInput } from '../types';
 import { Button } from '../components/ui/Button';
 import { Card } from '../components/ui/Card';
@@ -12,6 +13,7 @@ import { cx } from '../lib/cx';
 
 export function Transfers() {
   const { shops, isAdmin } = useShop();
+  const { user, hasRole } = useAuth();
   const [fromShopId, setFromShopId] = useState('');
   const [toShopId, setToShopId] = useState('');
   const [distributorItems, setDistributorItems] = useState<Item[]>([]);
@@ -20,9 +22,25 @@ export function Transfers() {
   const [error, setError] = useState('');
   const [submitting, setSubmitting] = useState(false);
   const [success, setSuccess] = useState(false);
+  const [incoming, setIncoming] = useState<Transfer[]>([]);
+  const [outgoing, setOutgoing] = useState<Transfer[]>([]);
+  const [confirmingId, setConfirmingId] = useState<string | null>(null);
+  const [retailList, setRetailList] = useState<Shop[]>([]);
+  const [shopNameById, setShopNameById] = useState<Record<string, string>>({});
+  const [itemNameById, setItemNameById] = useState<Record<string, string>>({});
 
   const distributors = shops.filter((s) => s.type === 'DISTRIBUTOR');
-  const retailers = shops.filter((s) => s.type === 'RETAIL');
+  const retailers = isAdmin ? shops.filter((s) => s.type === 'RETAIL') : retailList;
+  const canConfirm = hasRole('SALES');
+  const canCreate = isAdmin || hasRole('STOCK_MANAGER');
+
+  // For non-admins, lock "from" to user's own shopId and load retailers list
+  useEffect(() => {
+    if (!isAdmin && user?.shopId) {
+      setFromShopId(user.shopId);
+      apiGet<Shop[]>('/shops/retail').then(setRetailList).catch(() => setRetailList([]));
+    }
+  }, [isAdmin, user?.shopId]);
 
   useEffect(() => {
     if (!fromShopId) {
@@ -35,6 +53,89 @@ export function Transfers() {
       .catch(() => setDistributorItems([]))
       .finally(() => setLoading(false));
   }, [fromShopId]);
+
+  useEffect(() => {
+    if (canConfirm) {
+      apiGet<Transfer[]>('/transfers/pending')
+        .then(setIncoming)
+        .catch(() => setIncoming([]));
+    } else {
+      setIncoming([]);
+    }
+  }, [canConfirm]);
+
+  useEffect(() => {
+    if (canCreate) {
+      apiGet<Transfer[]>('/transfers/outgoing')
+        .then(setOutgoing)
+        .catch(() => setOutgoing([]));
+    } else {
+      setOutgoing([]);
+    }
+  }, [canCreate]);
+
+  // Resolve shop names and item names for incoming transfers
+  useEffect(() => {
+    let cancelled = false;
+    const ids = Array.from(
+      new Set(
+        [...incoming, ...outgoing]
+          .flatMap((t) => [t.fromShopId, t.toShopId])
+          .filter(Boolean),
+      ),
+    );
+    if (ids.length === 0) return;
+    (async () => {
+      try {
+        const shopsResp = await apiGet<Shop[]>(`/shops/by-ids?ids=${ids.join(',')}`);
+        if (cancelled) return;
+        const names: Record<string, string> = {};
+        for (const s of shopsResp) names[s.id] = s.name;
+        setShopNameById((prev) => ({ ...prev, ...names }));
+      } catch {
+        /* noop */
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, [incoming, outgoing]);
+
+  useEffect(() => {
+    let cancelled = false;
+    const itemIds = Array.from(
+      new Set([...incoming, ...outgoing].flatMap((t) => t.items.map((it) => it.itemId))),
+    );
+    if (itemIds.length === 0) return;
+    (async () => {
+      try {
+        const items = await apiGet<{ id: string; name: string }[]>(
+          `/inventory/items/by-ids?ids=${itemIds.join(',')}`,
+        );
+        if (cancelled) return;
+        const map: Record<string, string> = {};
+        for (const it of items) map[it.id] = it.name;
+        setItemNameById((prev) => ({ ...prev, ...map }));
+      } catch {
+        /* noop */
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, [incoming, outgoing]);
+
+  const confirmIncoming = async (id: string) => {
+    setConfirmingId(id);
+    try {
+      await apiPost(`/transfers/${id}/confirm`, {});
+      setIncoming((prev) => prev.filter((t) => t.id !== id));
+    } catch {
+      // ignore for now; could add toast
+    } finally {
+      setConfirmingId(null);
+    }
+  };
 
   const addLine = () => {
     const first = distributorItems[0];
@@ -80,10 +181,55 @@ export function Transfers() {
       {error ? <Callout tone="danger">{error}</Callout> : null}
       {success ? <Callout tone="success">Transfer created successfully.</Callout> : null}
 
-      {!isAdmin || shops.length === 0 ? (
-        <Callout tone="danger">
-          {!isAdmin ? 'Only admins can create transfers across shops.' : 'No shops available.'}
-        </Callout>
+      {canConfirm && incoming.length > 0 && (
+        <Card className="p-4 space-y-2">
+          <div className="text-sm font-semibold text-ink">Incoming transfers</div>
+          <div className="text-xs text-ink/60">Confirm receipt to update retail stock.</div>
+          <div className="space-y-3">
+            {incoming.map((t) => (
+              <Card key={t.id} className="p-3 border border-cream-dark/60">
+                <div className="flex items-center justify-between gap-3 mb-2">
+                  <div className="text-xs text-ink/80">
+                    <span className="font-medium">{shopNameById[t.fromShopId] ?? t.fromShopId}</span>
+                    <span className="text-ink/50"> • {new Date(t.createdAt).toLocaleString()}</span>
+                  </div>
+                  {canConfirm && (
+                    <Button
+                      size="sm"
+                      variant="primary"
+                      onClick={() => confirmIncoming(t.id)}
+                      disabled={confirmingId === t.id}
+                    >
+                      {confirmingId === t.id ? 'Confirming…' : 'Confirm received'}
+                    </Button>
+                  )}
+                </div>
+                <div className="overflow-x-auto">
+                  <table className="w-full text-xs">
+                    <thead className="bg-cream-dark/40">
+                      <tr>
+                        <th className="text-left px-2 py-1 font-medium text-ink/70">Item</th>
+                        <th className="text-right px-2 py-1 font-medium text-ink/70">Qty</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {t.items.map((it) => (
+                        <tr key={it.id} className="border-t border-cream-dark/50">
+                          <td className="px-2 py-1 text-ink">{itemNameById[it.itemId] ?? it.itemId}</td>
+                          <td className="px-2 py-1 text-right text-ink">{it.quantity}</td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              </Card>
+            ))}
+          </div>
+        </Card>
+      )}
+
+      {!canCreate ? (
+        <Callout tone="danger">Only Admin or Manager can create transfers.</Callout>
       ) : (
         <Card className="p-5 space-y-4">
           <div>
@@ -102,9 +248,10 @@ export function Transfers() {
                   }}
                   required
                   className={inputClass}
+                  disabled={!isAdmin}
                 >
-                  <option value="">Select distributor</option>
-                  {distributors.map((s) => (
+                  <option value="">{isAdmin ? 'Select distributor' : 'Your shop'}</option>
+                  {(isAdmin ? distributors : distributors.filter((d) => d.id === user?.shopId)).map((s) => (
                     <option key={s.id} value={s.id}>
                       {s.name}
                     </option>
@@ -197,6 +344,46 @@ export function Transfers() {
               </div>
             ) : null}
           </form>
+        </Card>
+      )}
+
+      {canCreate && outgoing.length > 0 && (
+        <Card className="p-4 space-y-2">
+          <div className="text-sm font-semibold text-ink">Outgoing transfers</div>
+          <div className="text-xs text-ink/60">Transfers created from the distributor awaiting confirmation.</div>
+          <div className="space-y-3">
+            {outgoing.map((t) => (
+              <Card key={t.id} className="p-3 border border-cream-dark/60">
+                <div className="flex items-center justify-between gap-3 mb-2">
+                  <div className="text-xs text-ink/80">
+                    <span className="font-medium">To: {shopNameById[t.toShopId] ?? t.toShopId}</span>
+                    <span className="text-ink/50"> • {new Date(t.createdAt).toLocaleString()}</span>
+                  </div>
+                  <div className="text-[10px] px-2 py-0.5 rounded-full border border-cream-dark/60 text-ink/70">
+                    {t.status}
+                  </div>
+                </div>
+                <div className="overflow-x-auto">
+                  <table className="w-full text-xs">
+                    <thead className="bg-cream-dark/40">
+                      <tr>
+                        <th className="text-left px-2 py-1 font-medium text-ink/70">Item</th>
+                        <th className="text-right px-2 py-1 font-medium text-ink/70">Qty</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {t.items.map((it) => (
+                        <tr key={it.id} className="border-t border-cream-dark/50">
+                          <td className="px-2 py-1 text-ink">{itemNameById[it.itemId] ?? it.itemId}</td>
+                          <td className="px-2 py-1 text-right text-ink">{it.quantity}</td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              </Card>
+            ))}
+          </div>
         </Card>
       )}
     </Page>
