@@ -6,6 +6,7 @@ import { Card } from '../components/ui/Card';
 import { Callout, Page } from '../components/ui/Page';
 import { Field, inputClass } from '../components/ui/Field';
 import { cx } from '../lib/cx';
+import { Spinner } from '../components/ui/Spinner';
 
 const personas = [
   {
@@ -261,10 +262,17 @@ export function Login() {
                 <Button
                   type="submit"
                   variant="primary"
-                  className={cx('w-full', loading && 'opacity-80')}
+                  className={cx('w-full')}
                   disabled={loading}
                 >
-                  {loading ? 'Signing in…' : 'Sign in'}
+                  {loading ? (
+                    <span className="inline-flex items-center gap-2">
+                      <Spinner />
+                      <span>Signing in…</span>
+                    </span>
+                  ) : (
+                    'Sign in'
+                  )}
                 </Button>
               </form>
             </Card>

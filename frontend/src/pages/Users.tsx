@@ -8,6 +8,7 @@ import { Card } from '../components/ui/Card';
 import { Field, inputClass } from '../components/ui/Field';
 import { Callout, Page } from '../components/ui/Page';
 import { Table, TableWrap, Td, Th } from '../components/ui/Table';
+import { Skeleton } from '../components/ui/Skeleton';
 
 const ROLES: Role[] = ['ADMIN', 'SALES', 'STOCK_MANAGER', 'ACCOUNTS'];
 
@@ -168,7 +169,14 @@ export function Users() {
       {shopId ? (
         <Card className="overflow-hidden">
           {loading ? (
-            <div className="p-6 text-sm text-ink/60">Loading…</div>
+            <div className="p-4 space-y-3">
+              <Skeleton className="h-4 w-40" />
+              <div className="space-y-2">
+                {Array.from({ length: 4 }).map((_, i) => (
+                  <Skeleton key={i} className="h-9 w-full" />
+                ))}
+              </div>
+            </div>
           ) : users.length === 0 ? (
             <div className="p-6 text-sm text-ink/60">No users found for this shop.</div>
           ) : (

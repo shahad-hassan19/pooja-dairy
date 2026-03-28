@@ -6,6 +6,7 @@ import { Button } from '../components/ui/Button';
 import { Card } from '../components/ui/Card';
 import { inputClass } from '../components/ui/Field';
 import { Callout, Page } from '../components/ui/Page';
+import { Skeleton } from '../components/ui/Skeleton';
 import { cx } from '../lib/cx';
 import {
   AreaChart, Area, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid,
@@ -234,19 +235,47 @@ function ShopDetail({ shopId }: { shopId: string }) {
             <div className="flex items-end justify-between gap-2 flex-wrap">
               <div className="text-sm font-semibold text-ink">Sales</div>
               <div className="flex items-end gap-2">
-                <input type="date" value={startDate} onChange={(e) => setStartDate(e.target.value)} className={cx(inputClass, 'text-xs py-1 px-2')} />
-                <input type="date" value={endDate} onChange={(e) => setEndDate(e.target.value)} className={cx(inputClass, 'text-xs py-1 px-2')} />
-                <Button variant="secondary" onClick={loadReports} disabled={loading} className="text-xs py-1">Go</Button>
+                <input
+                  type="date"
+                  value={startDate}
+                  onChange={(e) => setStartDate(e.target.value)}
+                  className={cx(inputClass, 'text-xs py-1 px-2')}
+                />
+                <input
+                  type="date"
+                  value={endDate}
+                  onChange={(e) => setEndDate(e.target.value)}
+                  className={cx(inputClass, 'text-xs py-1 px-2')}
+                />
+                <Button
+                  variant="secondary"
+                  onClick={loadReports}
+                  disabled={loading}
+                  className="text-xs py-1"
+                >
+                  Go
+                </Button>
               </div>
             </div>
-            {sales && (
+            {loading && !sales ? (
+              <div className="grid grid-cols-2 gap-2">
+                <Skeleton className="h-14 w-full rounded-lg" />
+                <Skeleton className="h-14 w-full rounded-lg" />
+              </div>
+            ) : sales && (
               <div className="grid grid-cols-2 gap-2">
                 <div className="rounded-lg bg-cream-light border border-cream-dark/40 p-2.5">
-                  <div className="text-[9px] uppercase tracking-widest text-ink/40">Revenue</div>
-                  <div className="text-lg font-bold text-ink">₹{Number(sales.totalRevenue).toFixed(0)}</div>
+                  <div className="text-[9px] uppercase tracking-widest text-ink/40">
+                    Revenue
+                  </div>
+                  <div className="text-lg font-bold text-ink">
+                    ₹{Number(sales.totalRevenue).toFixed(0)}
+                  </div>
                 </div>
                 <div className="rounded-lg bg-cream-light border border-cream-dark/40 p-2.5">
-                  <div className="text-[9px] uppercase tracking-widest text-ink/40">Invoices</div>
+                  <div className="text-[9px] uppercase tracking-widest text-ink/40">
+                    Invoices
+                  </div>
                   <div className="text-lg font-bold text-ink">{sales.totalInvoices}</div>
                 </div>
               </div>
@@ -370,31 +399,78 @@ function ShopDetail({ shopId }: { shopId: string }) {
               <div className="text-sm font-semibold text-ink">Peak hours & days</div>
             </div>
             <div className="p-3">
-              {intel.peakHours.length > 0 && (
-                <div className="mb-3">
-                  <div className="text-[10px] uppercase tracking-widest text-ink/40 mb-1.5">Busiest hours</div>
-                  <ResponsiveContainer width="100%" height={70}>
-                    <BarChart data={intel.peakHours} margin={{ top: 0, right: 0, left: 0, bottom: 0 }}>
-                      <XAxis dataKey="label" tick={{ fontSize: 8, fill: '#9c9686' }} axisLine={false} tickLine={false} />
-                      <Tooltip contentStyle={{ fontSize: 10, borderRadius: 6, padding: '4px 8px' }}
-                        formatter={(v: number) => [`₹${v.toLocaleString()}`, 'Revenue']} />
-                      <Bar dataKey="revenue" fill="#3d6b4f" radius={[2, 2, 0, 0]} />
-                    </BarChart>
-                  </ResponsiveContainer>
+              {loading && !intel ? (
+                <div className="space-y-4">
+                  <div className="space-y-2">
+                    <Skeleton className="h-3 w-32 rounded-full" />
+                    <Skeleton className="h-16 w-full rounded-lg" />
+                  </div>
+                  <div className="space-y-2">
+                    <Skeleton className="h-3 w-28 rounded-full" />
+                    <Skeleton className="h-16 w-full rounded-lg" />
+                  </div>
                 </div>
-              )}
-              {intel.peakDays.length > 0 && (
-                <div>
-                  <div className="text-[10px] uppercase tracking-widest text-ink/40 mb-1.5">Busiest days</div>
-                  <ResponsiveContainer width="100%" height={70}>
-                    <BarChart data={intel.peakDays} margin={{ top: 0, right: 0, left: 0, bottom: 0 }}>
-                      <XAxis dataKey="day" tick={{ fontSize: 8, fill: '#9c9686' }} axisLine={false} tickLine={false} />
-                      <Tooltip contentStyle={{ fontSize: 10, borderRadius: 6, padding: '4px 8px' }}
-                        formatter={(v: number) => [`₹${v.toLocaleString()}`, 'Revenue']} />
-                      <Bar dataKey="revenue" fill="#6b8f7b" radius={[2, 2, 0, 0]} />
-                    </BarChart>
-                  </ResponsiveContainer>
-                </div>
+              ) : (
+                <>
+                  {intel?.peakHours.length ? (
+                    <div className="mb-3">
+                      <div className="text-[10px] uppercase tracking-widest text-ink/40 mb-1.5">
+                        Busiest hours
+                      </div>
+                      <ResponsiveContainer width="100%" height={70}>
+                        <BarChart
+                          data={intel.peakHours}
+                          margin={{ top: 0, right: 0, left: 0, bottom: 0 }}
+                        >
+                          <XAxis
+                            dataKey="label"
+                            tick={{ fontSize: 8, fill: '#9c9686' }}
+                            axisLine={false}
+                            tickLine={false}
+                          />
+                          <Tooltip
+                            contentStyle={{
+                              fontSize: 10,
+                              borderRadius: 6,
+                              padding: '4px 8px',
+                            }}
+                            formatter={(v: number) => [`₹${v.toLocaleString()}`, 'Revenue']}
+                          />
+                          <Bar dataKey="revenue" fill="#3d6b4f" radius={[2, 2, 0, 0]} />
+                        </BarChart>
+                      </ResponsiveContainer>
+                    </div>
+                  ) : null}
+                  {intel?.peakDays.length ? (
+                    <div>
+                      <div className="text-[10px] uppercase tracking-widest text-ink/40 mb-1.5">
+                        Busiest days
+                      </div>
+                      <ResponsiveContainer width="100%" height={70}>
+                        <BarChart
+                          data={intel.peakDays}
+                          margin={{ top: 0, right: 0, left: 0, bottom: 0 }}
+                        >
+                          <XAxis
+                            dataKey="day"
+                            tick={{ fontSize: 8, fill: '#9c9686' }}
+                            axisLine={false}
+                            tickLine={false}
+                          />
+                          <Tooltip
+                            contentStyle={{
+                              fontSize: 10,
+                              borderRadius: 6,
+                              padding: '4px 8px',
+                            }}
+                            formatter={(v: number) => [`₹${v.toLocaleString()}`, 'Revenue']}
+                          />
+                          <Bar dataKey="revenue" fill="#6b8f7b" radius={[2, 2, 0, 0]} />
+                        </BarChart>
+                      </ResponsiveContainer>
+                    </div>
+                  ) : null}
+                </>
               )}
             </div>
           </Card>
@@ -511,10 +587,26 @@ export function Dashboard() {
               <div className="mt-1 text-xl font-bold text-ink">{dashboardSummary.length}</div>
             </Card>
           </div>
-          {loading ? <div className="text-sm text-ink/50 py-8 text-center">Loading...</div> : (
+          {loading ? (
+            <div className="grid gap-4 sm:grid-cols-2">
+              {Array.from({ length: 4 }).map((_, i) => (
+                <Card key={i} className="p-4 space-y-3">
+                  <Skeleton className="h-4 w-40" />
+                  <Skeleton className="h-6 w-24" />
+                  <Skeleton className="h-24 w-full" />
+                </Card>
+              ))}
+            </div>
+          ) : (
             <div className="grid gap-4 sm:grid-cols-2">
               {dashboardSummary.map((shop) => (
-                <ShopCard key={shop.shopId} shop={shop} trend={trendByShop[shop.shopId]} periodKey={period} onClick={() => setActiveTab(shop.shopId)} />
+                <ShopCard
+                  key={shop.shopId}
+                  shop={shop}
+                  trend={trendByShop[shop.shopId]}
+                  periodKey={period}
+                  onClick={() => setActiveTab(shop.shopId)}
+                />
               ))}
             </div>
           )}

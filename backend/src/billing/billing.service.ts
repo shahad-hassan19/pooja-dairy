@@ -21,6 +21,20 @@ export class BillingService {
     }
 
     return await this.prisma.$transaction(async (tx) => {
+      const shop = await tx.shop.findUnique({
+        where: { id: dto.shopId },
+      });
+
+      if (!shop) {
+        throw new BadRequestException('Shop not found');
+      }
+
+      if (shop.type !== 'RETAIL') {
+        throw new BadRequestException(
+          'Only retail shops can create customer invoices',
+        );
+      }
+
       // Validate stock
       for (const item of dto.items) {
         const stock = await tx.stockLog.aggregate({

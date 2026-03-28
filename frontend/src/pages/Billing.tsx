@@ -185,6 +185,9 @@ export function Billing() {
   >([]);
   const [selectedIndex, setSelectedIndex] = useState<number | null>(null);
 
+  const currentShop = shops.find((s) => s.id === shopId);
+  const isDistributorShop = currentShop?.type === 'DISTRIBUTOR';
+
   /* ── Helpers ── */
   const computeLineTotal = (qty: number, rate: number, gst: number) => {
     const base = Number(qty || 0) * Number(rate || 0);
@@ -387,7 +390,7 @@ export function Billing() {
       </div>
 
       {/* ══════════ BODY — two-column split ══════════ */}
-      {shopId && (
+      {shopId && !isDistributorShop && (
         <div className="flex" style={{ minHeight: 'calc(100vh - 100px)' }}>
 
           {/* ─── LEFT PANEL — white, billing items ─── */}
@@ -658,6 +661,15 @@ export function Billing() {
               </p>
             </div>
           </aside>
+        </div>
+      )}
+
+      {shopId && isDistributorShop && (
+        <div className="px-6 pb-8">
+          <div className="my-4 rounded-lg border-l-4 border-amber-500 bg-amber-50 px-4 py-3 text-sm text-amber-800">
+            Billing is only available for retail shops. Use the Transfers screen to move
+            stock from the distributor to retail shops, where sales invoices can be created.
+          </div>
         </div>
       )}
 

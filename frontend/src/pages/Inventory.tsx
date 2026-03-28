@@ -7,6 +7,7 @@ import { Card } from '../components/ui/Card';
 import { Field, inputClass } from '../components/ui/Field';
 import { Callout, Page } from '../components/ui/Page';
 import { Table, TableWrap, Td, Th } from '../components/ui/Table';
+import { Skeleton } from '../components/ui/Skeleton';
 import { cx } from '../lib/cx';
 
 interface ItemWithStock extends Item {
@@ -241,7 +242,14 @@ export function Inventory() {
       {shopId ? (
         <Card className="overflow-hidden">
           {loading ? (
-            <div className="p-6 text-sm text-ink/60">Loading…</div>
+            <div className="p-4 space-y-3">
+              <Skeleton className="h-4 w-32" />
+              <div className="space-y-2">
+                {Array.from({ length: 5 }).map((_, i) => (
+                  <Skeleton key={i} className="h-10 w-full" />
+                ))}
+              </div>
+            </div>
           ) : items.length === 0 ? (
             <div className="p-6 text-sm text-ink/60">No items found.</div>
           ) : (
