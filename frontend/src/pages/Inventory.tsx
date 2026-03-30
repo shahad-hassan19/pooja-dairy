@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useState } from 'react';
 import { apiGet, apiPost } from '../api/client';
 import { useShop } from '../contexts/useShop';
+import { useAuth } from '../auth/useAuth';
 import type { Item } from '../types';
 import { Button } from '../components/ui/Button';
 import { Card } from '../components/ui/Card';
@@ -16,6 +17,7 @@ interface ItemWithStock extends Item {
 
 export function Inventory() {
   const { shopId, shops, setShopId, isAdmin } = useShop();
+  const { hasRole } = useAuth();
   const [items, setItems] = useState<ItemWithStock[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
@@ -28,6 +30,8 @@ export function Inventory() {
   const [adjustChange, setAdjustChange] = useState(0);
   const [adjustReason, setAdjustReason] = useState('');
   const [submitting, setSubmitting] = useState(false);
+
+  const canMutateInventory = hasRole('STOCK_MANAGER', 'ADMIN');
 
   const load = useCallback(() => {
     if (!shopId) return;
@@ -47,6 +51,7 @@ export function Inventory() {
   const handleCreateItem = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!shopId) return;
+    if (!canMutateInventory) return;
     setSubmitting(true);
     setError('');
     try {
@@ -73,6 +78,7 @@ export function Inventory() {
   const handleAdjust = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!shopId || !selectedItem) return;
+    if (!canMutateInventory) return;
     setSubmitting(true);
     setError('');
     try {
@@ -122,7 +128,7 @@ export function Inventory() {
             })}
           </div>
         ) : null}
-        {shopId ? (
+        {shopId && canMutateInventory ? (
           <Button variant="primary" onClick={() => setShowItemForm(true)}>
             Add Item
           </Button>
@@ -132,7 +138,7 @@ export function Inventory() {
       {error ? <Callout tone="danger">{error}</Callout> : null}
       {!shopId && !isAdmin ? <Callout tone="danger">No shop assigned.</Callout> : null}
 
-      {showItemForm && shopId ? (
+      {showItemForm && shopId && canMutateInventory ? (
         <Card className="p-5">
           <div className="flex items-center justify-between gap-3">
             <div>
@@ -274,7 +280,13 @@ export function Inventory() {
                         {item.currentStock}
                       </Td>
                       <Td className="text-right">
-                        <Button variant="secondary" size="sm" type="button" onClick={() => openAdjust(item)}>
+                        <Button
+                          variant="secondary"
+                          size="sm"
+                          type="button"
+                          disabled={!canMutateInventory}
+                          onClick={() => openAdjust(item)}
+                        >
                           Adjust
                         </Button>
                       </Td>

@@ -6,6 +6,7 @@ import {
   Param,
   UseGuards,
   Query,
+  ForbiddenException,
 } from '@nestjs/common';
 import { InventoryService } from './inventory.service';
 import { CreateItemDto } from './dto/create-item.dto';
@@ -34,7 +35,10 @@ export class InventoryController {
   @Post('item')
   @Roles(Role.STOCK_MANAGER, Role.ADMIN)
   @UseGuards(ShopIsolationGuard)
-  createItem(@Body() dto: CreateItemDto) {
+  createItem(@CurrentUser() user: JwtPayload, @Body() dto: CreateItemDto) {
+    if (user.role === Role.SALES) {
+      throw new ForbiddenException('Sales cannot create inventory items');
+    }
     return this.inventoryService.createItem(dto);
   }
 
@@ -48,6 +52,9 @@ export class InventoryController {
   @Roles(Role.STOCK_MANAGER, Role.ADMIN)
   @UseGuards(ShopIsolationGuard)
   adjustStock(@CurrentUser() user: JwtPayload, @Body() dto: AdjustStockDto) {
+    if (user.role === Role.SALES) {
+      throw new ForbiddenException('Sales cannot adjust stock');
+    }
     return this.inventoryService.adjustStock(user, dto);
   }
 

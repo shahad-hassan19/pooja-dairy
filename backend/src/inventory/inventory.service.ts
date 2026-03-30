@@ -1,4 +1,8 @@
-import { Injectable, BadRequestException } from '@nestjs/common';
+import {
+  Injectable,
+  BadRequestException,
+  ForbiddenException,
+} from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import { CreateItemDto } from './dto/create-item.dto';
 import { AdjustStockDto } from './dto/adjust-stock.dto';
@@ -90,6 +94,10 @@ export class InventoryService {
   async adjustStock(user: JwtPayload, dto: AdjustStockDto) {
     // Security: guard already ensures users can only operate on their shop.
     // For global SKU items, we don't require Item.shopId to match the user shop.
+    if (user.role !== 'ADMIN' && user.role !== 'STOCK_MANAGER') {
+      throw new ForbiddenException('Not allowed to adjust stock');
+    }
+
     const item = await this.prisma.item.findFirst({
       where: {
         id: dto.itemId,

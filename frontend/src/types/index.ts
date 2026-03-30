@@ -60,6 +60,19 @@ export interface Transfer {
   items: TransferItem[];
 }
 
+export type NotificationType = 'TRANSFER_CONFIRM_REQUIRED' | 'TRANSFER_CONFIRMED_ACK';
+export interface Notification {
+  id: string;
+  type: NotificationType;
+  title: string;
+  message?: string | null;
+  transferId?: string | null;
+  fromShopId?: string | null;
+  toShopId?: string | null;
+  createdAt: string;
+  readAt?: string | null;
+}
+
 export interface AuditLogRecord {
   id: string;
   userId: string;

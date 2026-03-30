@@ -35,6 +35,8 @@ model User {
   shop         Shop     @relation(fields: [shopId], references: [id])
   refreshToken String?
   createdAt    DateTime @default(now())
+
+  notifications Notification[]
 }
 
 enum Role {
@@ -126,6 +128,8 @@ model Transfer {
   status      TransferStatus @default(PENDING)
 
   items TransferItem[]
+
+  notifications Notification[]
 }
 
 model TransferItem {
@@ -141,4 +145,28 @@ enum TransferStatus {
   PENDING
   CONFIRMED
   REJECTED
+}
+
+enum NotificationType {
+  TRANSFER_CONFIRM_REQUIRED
+  TRANSFER_CONFIRMED_ACK
+}
+
+model Notification {
+  id          String            @id @default(uuid())
+  userId      String
+  type        NotificationType
+  title       String
+  message     String?
+  transferId  String?
+  fromShopId  String?
+  toShopId    String?
+  readAt      DateTime?
+  createdAt   DateTime          @default(now())
+
+  user     User     @relation(fields: [userId], references: [id])
+  transfer Transfer? @relation(fields: [transferId], references: [id])
+
+  @@index([userId, readAt])
+  @@index([transferId])
 }

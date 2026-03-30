@@ -12,11 +12,15 @@ export class TransfersService {
     private auditService: AuditService,
   ) {}
 
+  // Keep notification type assignment robust even if generated typings lag in the IDE.
+  private readonly TRANSFER_CONFIRM_REQUIRED =
+    'TRANSFER_CONFIRM_REQUIRED' as const;
+
   async createTransfer(
     user: JwtPayload,
     dto: CreateTransferDto,
   ): Promise<Transfer> {
-    return await this.prisma.$transaction(
+    const { transfer, fromShop, toShop } = await this.prisma.$transaction(
       async (tx) => {
         const fromShop = await tx.shop.findUnique({
           where: { id: dto.fromShopId },
@@ -115,10 +119,49 @@ export class TransfersService {
           },
         );
 
-        return transfer;
+        // Return extra data needed for notifications outside the transaction.
+        return { transfer, fromShop, toShop };
       },
       { maxWait: 10000, timeout: 60000 },
     );
+
+    // Create alerts for admins + the target retail shop (sales) to confirm receipt.
+    const admins = await this.prisma.user.findMany({
+      where: { role: 'ADMIN' },
+      select: { id: true },
+    });
+
+    const retailSalesUsers = await this.prisma.user.findMany({
+      where: { role: 'SALES', shopId: dto.toShopId },
+      select: { id: true },
+    });
+
+    const notificationsData = [
+      ...admins.map((u) => ({
+        userId: u.id,
+        type: this.TRANSFER_CONFIRM_REQUIRED,
+        title: 'Transfer pending confirmation',
+        message: `${fromShop.name} sent transfer to ${toShop.name}. Please confirm receipt to update stock.`,
+        transferId: transfer.id,
+        fromShopId: fromShop.id,
+        toShopId: toShop.id,
+      })),
+      ...retailSalesUsers.map((u) => ({
+        userId: u.id,
+        type: this.TRANSFER_CONFIRM_REQUIRED,
+        title: 'Transfer pending confirmation',
+        message: `${fromShop.name} sent transfer to ${toShop.name}. Please confirm receipt to update stock.`,
+        transferId: transfer.id,
+        fromShopId: fromShop.id,
+        toShopId: toShop.id,
+      })),
+    ];
+
+    if (notificationsData.length > 0) {
+      await this.prisma.notification.createMany({ data: notificationsData });
+    }
+
+    return transfer;
   }
 
   async incomingPending(user: JwtPayload) {
@@ -155,7 +198,7 @@ export class TransfersService {
   }
 
   async confirmTransfer(user: JwtPayload, transferId: string) {
-    return await this.prisma.$transaction(
+    const updated = await this.prisma.$transaction(
       async (tx) => {
         const transfer = await tx.transfer.findUnique({
           where: { id: transferId },
@@ -196,10 +239,17 @@ export class TransfersService {
           transfer.id,
           { to: transfer.toShopId, itemsCount: transfer.items.length },
         );
-
         return updated;
       },
       { maxWait: 10000, timeout: 60000 },
     );
+
+    // Clear confirmation alerts for this transfer (no need to be part of the transaction).
+    await this.prisma.notification.updateMany({
+      where: { transferId: updated.id, readAt: null },
+      data: { readAt: new Date() },
+    });
+
+    return updated;
   }
 }

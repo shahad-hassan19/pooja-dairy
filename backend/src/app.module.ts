@@ -14,6 +14,7 @@ import { ShopsModule } from './shops/shops.module';
 import { BillingModule } from './billing/billing.module';
 import { TransfersModule } from './transfers/transfers.module';
 import { ReportsModule } from './reports/reports.module';
+import { NotificationsModule } from './notifications/notifications.module';
 
 @Module({
   imports: [
@@ -27,6 +28,7 @@ import { ReportsModule } from './reports/reports.module';
     BillingModule,
     TransfersModule,
     ReportsModule,
+    NotificationsModule,
   ],
   controllers: [AppController],
   providers: [

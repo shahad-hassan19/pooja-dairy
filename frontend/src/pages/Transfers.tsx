@@ -1,8 +1,8 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import { apiGet, apiPost } from '../api/client';
 import { useAuth } from '../auth/useAuth';
 import { useShop } from '../contexts/useShop';
-import type { Item, Shop, Transfer } from '../types';
+import type { Item, Notification, Shop, Transfer } from '../types';
 import type { TransferItemInput, TransferStatus } from '../types';
 import { Button } from '../components/ui/Button';
 import { Card } from '../components/ui/Card';
@@ -30,6 +30,8 @@ export function Transfers() {
   const [shopNameById, setShopNameById] = useState<Record<string, string>>({});
   const [itemNameById, setItemNameById] = useState<Record<string, string>>({});
   const [outgoingStatusFilter, setOutgoingStatusFilter] = useState<'ALL' | TransferStatus>('ALL');
+  const [notifications, setNotifications] = useState<Notification[]>([]);
+  const [notificationsLoading, setNotificationsLoading] = useState(false);
 
   const distributors = shops.filter((s) => s.type === 'DISTRIBUTOR');
   const retailers = isAdmin ? shops.filter((s) => s.type === 'RETAIL') : retailList;
@@ -88,6 +90,23 @@ export function Transfers() {
     }
   }, [canCreate]);
 
+  const loadNotifications = useCallback(async () => {
+    if (!user?.sub) return;
+    setNotificationsLoading(true);
+    try {
+      const list = await apiGet<Notification[]>('/notifications/unread');
+      setNotifications(list);
+    } catch {
+      setNotifications([]);
+    } finally {
+      setNotificationsLoading(false);
+    }
+  }, [user?.sub]);
+
+  useEffect(() => {
+    loadNotifications().catch(() => setNotifications([]));
+  }, [loadNotifications]);
+
   // Resolve shop names and item names for incoming transfers
   useEffect(() => {
     let cancelled = false;
@@ -144,10 +163,20 @@ export function Transfers() {
     try {
       await apiPost(`/transfers/${id}/confirm`, {});
       setIncoming((prev) => prev.filter((t) => t.id !== id));
+      setNotifications((prev) => prev.filter((n) => n.transferId !== id));
     } catch {
       // ignore for now; could add toast
     } finally {
       setConfirmingId(null);
+    }
+  };
+
+  const markNotificationRead = async (notificationId: string) => {
+    try {
+      await apiPost(`/notifications/${notificationId}/read`, {});
+      setNotifications((prev) => prev.filter((n) => n.id !== notificationId));
+    } catch {
+      // ignore for now; could add toast
     }
   };
 
@@ -181,6 +210,7 @@ export function Transfers() {
       await apiPost('/transfers', { fromShopId, toShopId, items: lines });
       setLines([]);
       setSuccess(true);
+      loadNotifications().catch(() => {});
     } catch (e) {
       setError(e instanceof Error ? e.message : 'Failed to create transfer');
     } finally {
@@ -191,6 +221,49 @@ export function Transfers() {
   return (
     <Page className="space-y-6">
       <PageHeader title="Transfers" description="Transfer stock from distributor to retail shop." />
+
+      {notificationsLoading ? null : notifications.length > 0 ? (
+        <Card className="p-4 space-y-3">
+          <div className="flex items-center justify-between gap-3">
+            <div className="text-sm font-semibold text-ink">Alerts</div>
+            <div className="text-xs text-ink/60">{notifications.length} pending</div>
+          </div>
+
+          <div className="space-y-2">
+            {notifications.map((n) => (
+              <div
+                key={n.id}
+                className="flex items-start justify-between gap-3 p-3 rounded-xl bg-cream-dark/20 border border-cream-dark/50"
+              >
+                <div className="min-w-0">
+                  <div className="text-xs font-medium text-ink">{n.title}</div>
+                  {n.message ? <div className="text-[11px] text-ink/60 mt-1">{n.message}</div> : null}
+                  <div className="text-[10px] text-ink/40 mt-2">{new Date(n.createdAt).toLocaleString()}</div>
+                </div>
+
+                {canConfirm && n.transferId ? (
+                  <Button
+                    size="sm"
+                    variant="primary"
+                    onClick={() => confirmIncoming(n.transferId!)}
+                    disabled={confirmingId === n.transferId}
+                  >
+                    {confirmingId === n.transferId ? 'Confirming…' : 'Confirm received'}
+                  </Button>
+                ) : (
+                  <Button
+                    size="sm"
+                    variant="ghost"
+                    onClick={() => markNotificationRead(n.id)}
+                  >
+                    Dismiss
+                  </Button>
+                )}
+              </div>
+            ))}
+          </div>
+        </Card>
+      ) : null}
 
       {error ? <Callout tone="danger">{error}</Callout> : null}
       {success ? <Callout tone="success">Transfer created successfully.</Callout> : null}
